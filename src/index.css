@@ -1,0 +1,219 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   THEME TOKENS
+   Colors are CSS variables (space-separated RGB channels so
+   Tailwind's /alpha modifiers work). Themes swap by setting
+   data-theme on <html>. Default (no attribute) = Krang.
+   ============================================================ */
+:root,
+:root[data-theme='krang'] {
+  --bg: 19 19 19;
+  --bg-deep: 10 10 10;
+  --surface: 27 27 27;
+  --surface-2: 31 31 31;
+  --border: 42 42 42;
+  --border-2: 53 53 53;
+  --fg: 255 255 255;
+  --fg-soft: 226 226 226;
+  --muted: 156 156 156;
+  --faint: 110 110 110;
+  --accent: 227 6 19;
+  --accent-strong: 255 64 75;
+  --accent-contrast: 255 255 255;
+}
+
+/* Carbon — cool slate dark with electric blue. */
+:root[data-theme='carbon'] {
+  --bg: 13 17 23;
+  --bg-deep: 8 11 15;
+  --surface: 22 27 34;
+  --surface-2: 28 34 43;
+  --border: 48 54 61;
+  --border-2: 64 71 80;
+  --fg: 246 248 250;
+  --fg-soft: 220 226 233;
+  --muted: 139 148 158;
+  --faint: 99 110 123;
+  --accent: 31 111 235;
+  --accent-strong: 88 166 255;
+  --accent-contrast: 255 255 255;
+}
+
+/* Paper — warm light with the brand red. */
+:root[data-theme='paper'] {
+  --bg: 247 246 243;
+  --bg-deep: 237 235 230;
+  --surface: 255 255 255;
+  --surface-2: 248 247 244;
+  --border: 224 221 214;
+  --border-2: 206 202 194;
+  --fg: 23 23 23;
+  --fg-soft: 40 40 40;
+  --muted: 92 92 92;
+  --faint: 140 138 132;
+  --accent: 209 5 16;
+  --accent-strong: 176 4 13;
+  --accent-contrast: 255 255 255;
+}
+
+/* Arctic — cool light with blue. */
+:root[data-theme='arctic'] {
+  --bg: 239 242 246;
+  --bg-deep: 226 231 238;
+  --surface: 255 255 255;
+  --surface-2: 247 249 251;
+  --border: 214 221 230;
+  --border-2: 196 205 217;
+  --fg: 15 23 42;
+  --fg-soft: 30 41 59;
+  --muted: 90 100 116;
+  --faint: 138 148 164;
+  --accent: 37 99 235;
+  --accent-strong: 29 78 216;
+  --accent-contrast: 255 255 255;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: rgb(var(--bg));
+  color: rgb(var(--fg-soft));
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Red/accent text selection — a signature of the source design. */
+::selection {
+  background: rgb(var(--accent));
+  color: rgb(var(--accent-contrast));
+}
+
+/* Brand wordmark: flat Space Grotesk, no glow. */
+.wordmark {
+  font-family: 'Space Grotesk', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+}
+
+/* Thin scrollbars; thumb turns accent on hover. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--border-2)) transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: rgb(var(--bg-deep));
+}
+*::-webkit-scrollbar-thumb {
+  background: rgb(var(--border-2));
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--accent));
+}
+
+/* Keyboard focus: precise accent outline, no soft glow. */
+:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 1px;
+}
+
+/* ---------- Markdown prose for assistant messages ---------- */
+.prose-chat {
+  font-family: 'Inter', sans-serif;
+}
+.prose-chat p {
+  margin: 0.5rem 0;
+  line-height: 1.65;
+}
+.prose-chat ul,
+.prose-chat ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+.prose-chat ul {
+  list-style: disc;
+}
+.prose-chat ol {
+  list-style: decimal;
+}
+.prose-chat li {
+  margin: 0.25rem 0;
+}
+.prose-chat h1,
+.prose-chat h2,
+.prose-chat h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 1rem 0 0.5rem;
+  line-height: 1.15;
+  color: rgb(var(--fg));
+}
+.prose-chat h1 {
+  font-size: 1.4rem;
+}
+.prose-chat h2 {
+  font-size: 1.2rem;
+}
+.prose-chat h3 {
+  font-size: 1.05rem;
+}
+.prose-chat a {
+  color: rgb(var(--accent-strong));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-chat blockquote {
+  border-left: 2px solid rgb(var(--accent) / 0.5);
+  padding-left: 1rem;
+  margin: 0.5rem 0;
+  color: rgb(var(--muted));
+}
+.prose-chat table {
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+}
+.prose-chat th,
+.prose-chat td {
+  border: 1px solid rgb(var(--border));
+  padding: 0.4rem 0.7rem;
+}
+/* Inline code (block code handled by the syntax highlighter). */
+.prose-chat code:not(pre code) {
+  background-color: rgb(var(--accent) / 0.1);
+  color: rgb(var(--accent-strong));
+  padding: 0.15rem 0.4rem;
+  border-radius: 2px;
+  font-size: 0.875em;
+  font-family: 'SF Mono', ui-monospace, Menlo, monospace;
+}
+
+/* Respect reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
