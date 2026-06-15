@@ -1,8 +1,27 @@
+import { useMemo, useState } from 'react'
+
 /**
  * Left sidebar listing saved conversations. Fixed 260px width.
  * Conversation titles are derived (in App) from the first user message.
+ * A search box filters by title and message text (client-side).
  */
 export default function Sidebar({ conversations, activeId, onNew, onSelect, onDelete, onOpenSettings }) {
+  const [query, setQuery] = useState('')
+
+  // Filter on title or any user/assistant message body. Cheap, fully local.
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return conversations
+    return conversations.filter((c) => {
+      if ((c.title || '').toLowerCase().includes(q)) return true
+      return c.messages?.some(
+        (m) =>
+          (m.role === 'user' || m.role === 'assistant') &&
+          m.content.toLowerCase().includes(q)
+      )
+    })
+  }, [conversations, query])
+
   return (
     <aside className="flex h-full w-[260px] shrink-0 flex-col bg-void-850/70 shadow-[inset_-1px_0_0_rgb(var(--border-2)/0.18)] backdrop-blur-sm">
       <div className="p-3">
@@ -18,6 +37,19 @@ export default function Sidebar({ conversations, activeId, onNew, onSelect, onDe
         </button>
       </div>
 
+      {/* Search */}
+      {conversations.length > 0 && (
+        <div className="px-3 pb-2">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="search chats…"
+            className="input-line w-full px-2.5 py-1.5 font-mono text-xs text-fg"
+          />
+        </div>
+      )}
+
       <div className="px-3 pb-1.5">
         <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-faint">
           // sessions
@@ -27,9 +59,11 @@ export default function Sidebar({ conversations, activeId, onNew, onSelect, onDe
       <div className="flex-1 overflow-y-auto px-2 pb-3">
         {conversations.length === 0 ? (
           <p className="px-2 py-4 font-mono text-xs text-faint">No conversations yet.</p>
+        ) : filtered.length === 0 ? (
+          <p className="px-2 py-4 font-mono text-xs text-faint">No chats match “{query}”.</p>
         ) : (
           <ul className="space-y-0.5">
-            {conversations.map((c) => {
+            {filtered.map((c) => {
               const isActive = c.id === activeId
               return (
                 <li key={c.id}>

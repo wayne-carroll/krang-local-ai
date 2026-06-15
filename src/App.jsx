@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar.jsx'
 import ChatWindow from './components/ChatWindow.jsx'
 import InputBar from './components/InputBar.jsx'
 import ModelPicker from './components/ModelPicker.jsx'
+import SkillPicker from './components/SkillPicker.jsx'
 import ContextGauge from './components/ContextGauge.jsx'
 import ModelBrowser from './components/ModelBrowser.jsx'
 import SettingsModal from './components/SettingsModal.jsx'
@@ -17,6 +18,7 @@ import {
 } from './lib/ollama.js'
 import { estimateMessagesTokens } from './lib/tokens.js'
 import { applyTheme, loadTheme } from './lib/themes.js'
+import { getSkill, loadSkill, SKILL_KEY, DEFAULT_SKILL } from './lib/skills.js'
 
 const STORAGE_KEY = 'ollama-chat:conversations'
 const MODEL_KEY = 'ollama-chat:selected-model'
@@ -75,6 +77,11 @@ export default function App() {
   const [browserOpen, setBrowserOpen] = useState(false)
   const [pulls, setPulls] = useState({}) // { [name]: { phase, percent, status, error } }
   const pullControllers = useRef({}) // { [name]: AbortController }
+
+  // Active skill (persona). Tracks the active conversation's skill when one is
+  // open; otherwise it's the choice that will apply to the next new chat. The
+  // last choice is persisted as the default for new chats.
+  const [skillId, setSkillId] = useState(loadSkill)
 
   // Settings + theme.
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -308,6 +315,23 @@ export default function App() {
   function handleSelectConversation(id) {
     if (isStreaming) return // avoid switching mid-stream
     setActiveId(id)
+    // Reflect the loaded conversation's skill in the picker.
+    const conv = conversations.find((c) => c.id === id)
+    setSkillId(conv?.skill || DEFAULT_SKILL)
+  }
+
+  // Choose the active skill (persona). Persisted as the default for new chats,
+  // and applied to the current conversation if one is open.
+  function handleSelectSkill(id) {
+    setSkillId(id)
+    try {
+      localStorage.setItem(SKILL_KEY, id)
+    } catch {
+      // ignore storage failures
+    }
+    if (activeId) {
+      setConversations((prev) => prev.map((c) => (c.id === activeId ? { ...c, skill: id } : c)))
+    }
   }
 
   function handleDeleteConversation(id) {
@@ -364,9 +388,14 @@ export default function App() {
     const creatingNew = !convId
     if (creatingNew) convId = genId()
 
-    // Build the message history we'll send to the API.
+    // Build the message history we'll send to the API. If a skill (persona) is
+    // active, prepend its system prompt so the model adopts that role.
     const priorMessages = activeConversation ? activeConversation.messages : []
     const apiMessages = toApiMessages([...priorMessages, userMsg])
+    const skill = getSkill(skillId)
+    if (skill.system) {
+      apiMessages.unshift({ role: 'system', content: skill.system })
+    }
 
     // Commit the user message + empty assistant placeholder to state.
     setConversations((prev) => {
@@ -375,6 +404,7 @@ export default function App() {
           id: convId,
           title: deriveTitle(text),
           model: selectedModel,
+          skill: skillId,
           messages: [userMsg, assistantMsg],
         }
         return [conv, ...prev]
@@ -571,6 +601,7 @@ export default function App() {
             onToggleAuto={setAutoCompact}
             approximate={usageApproximate}
           />
+          <SkillPicker selected={skillId} onSelect={handleSelectSkill} disabled={isStreaming} />
           <ModelPicker
             models={models}
             selected={selectedModel}
