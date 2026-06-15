@@ -64,27 +64,61 @@ lines in `src/index.css` + an entry in `src/lib/themes.js` — no component chan
 - Clear banner when **no models are installed**, with a Browse button to open the catalog.
 - Graceful handling of network errors mid-stream.
 
-## Prerequisites
+## Quick start (recommended)
 
-1. Install Ollama and start it:
+One command installs prerequisites, starts Ollama, and launches the web app:
+
+```bash
+./start.sh
+```
+
+On **macOS** it uses [Homebrew](https://brew.sh); on **Linux** it uses your distro's
+package manager plus Ollama's official installer. The script is safe to re-run — it
+installs only what's missing, starts Ollama only if it isn't already running, offers to
+pull a default model on first launch, and opens the app at http://localhost:5173. Press
+**Ctrl+C** to stop both the web app and the Ollama process it started.
+
+## Manual setup
+
+If you'd rather do it by hand:
+
+1. **Install Node.js 18+.**
+   - macOS: `brew install node`
+   - Linux (Debian/Ubuntu): `curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs`
+   - Or download from [nodejs.org](https://nodejs.org).
+2. **Install Ollama.**
+   - macOS: `brew install ollama` (or download from [ollama.com/download](https://ollama.com/download))
+   - Linux: `curl -fsSL https://ollama.com/install.sh | sh`
+3. **Start the Ollama service:**
    ```bash
    ollama serve
    ```
-2. Pull at least one model (or use the in-app model browser):
+4. **Pull at least one model** (or use the in-app model browser):
    ```bash
    ollama pull llama3.2      # or gemma3, qwen2.5-coder, deepseek-r1, etc.
+   ```
+5. **Install dependencies and run the dev server:**
+   ```bash
+   npm install
+   npm run dev      # http://localhost:5173
    ```
 
 > **CORS note:** browsers block cross-origin requests by default. Ollama allows `localhost`
 > origins out of the box, but if you see CORS errors, start Ollama with
 > `OLLAMA_ORIGINS=* ollama serve`.
 
-## Run
+## Troubleshooting
 
-```bash
-npm install
-npm run dev      # http://localhost:5173
-```
+| Symptom | Cause & fix |
+| --- | --- |
+| **App shows "Ollama is not running"** | The service isn't up. Run `ollama serve` (or re-run `./start.sh`). Verify with `curl http://localhost:11434/api/tags`. |
+| **CORS / "failed to fetch" errors in the browser console** | The browser is blocking the request to Ollama. Restart it with `OLLAMA_ORIGINS=* ollama serve`. |
+| **`ollama: command not found` right after installing** | The new binary isn't on your `PATH` yet. Open a new terminal (or `source` your shell profile), then retry. |
+| **`address already in use` on port 11434** | Another Ollama instance is already running — you can just use it. To find it: `lsof -i :11434`. |
+| **`Port 5173 is in use`** | Another Vite app is running. Stop it, or start this one on another port: `npm run dev -- --port 5174`. |
+| **`brew: command not found` (macOS)** | `start.sh` needs Homebrew to install Node/Ollama. Install it from [brew.sh](https://brew.sh), then re-run — or install Node and Ollama manually (see above). |
+| **Model pull fails or is killed partway** | Usually out of disk space or RAM. Check free space, then retry `ollama pull <model>`. Smaller models (e.g. `llama3.2`, `phi4`) need less memory. |
+| **Responses are very slow** | The model is larger than your hardware comfortably runs. Try a smaller model from the in-app browser, or one with fewer parameters. |
 
 ## Build
 
@@ -129,3 +163,8 @@ src/
 Everything runs locally against your own Ollama instance. The app makes no network requests
 other than to `http://localhost:11434` (plus Google Fonts / the KaTeX stylesheet for assets).
 Conversations live only in your browser's `localStorage`.
+
+## License
+
+[MIT](LICENSE) — free to use, modify, fork, and redistribute, including commercially. Just
+keep the copyright notice. No warranty.
