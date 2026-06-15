@@ -35,7 +35,7 @@ export default function ModelPicker({ models, selected, onSelect, disabled }) {
         type="button"
         disabled={disabled || !hasModels}
         onClick={() => setOpen((o) => !o)}
-        className="flex h-8 items-center gap-2 rounded-md border border-void-600 bg-void-800 px-3 font-mono text-xs font-medium text-fg transition-all hover:border-krang/60 hover:shadow-glow-sm disabled:cursor-not-allowed disabled:opacity-50"
+        className="btn-ghost flex h-8 items-center gap-2 px-3 font-mono text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span className="h-1.5 w-1.5 rounded-full bg-krang shadow-glow-sm" />
         <span className="max-w-[200px] truncate">
@@ -55,7 +55,7 @@ export default function ModelPicker({ models, selected, onSelect, disabled }) {
       </button>
 
       {open && hasModels && (
-        <div className="absolute right-0 z-20 mt-2 max-h-[70vh] w-80 animate-risefade overflow-y-auto rounded-lg border border-void-600 bg-void-850 p-1 shadow-glow-lg">
+        <div className="panel absolute right-0 z-20 mt-2 max-h-[70vh] w-80 animate-risefade overflow-y-auto p-1">
           {models.map((m) => {
             const isActive = m.name === selected
             return (
@@ -74,7 +74,7 @@ export default function ModelPicker({ models, selected, onSelect, disabled }) {
                   <span className="truncate font-mono text-sm font-medium text-fg">{m.name}</span>
                   <span className="flex shrink-0 items-center gap-2">
                     {/* Coarse category, matched fuzzily from the model name. */}
-                    <span className="rounded border border-void-600 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-krang/70">
+                    <span className="chip px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-krang/70">
                       {categorizeModel(m.name)}
                     </span>
                     {isActive && (

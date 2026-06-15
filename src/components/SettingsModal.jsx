@@ -45,11 +45,11 @@ export default function SettingsModal({
       onMouseDown={onClose}
     >
       <div
-        className="flex h-[460px] w-full max-w-2xl animate-risefade overflow-hidden rounded-xl border border-line bg-void-850 shadow-glow-lg"
+        className="panel flex h-[460px] w-full max-w-2xl animate-risefade overflow-hidden"
         onMouseDown={(e) => e.stopPropagation()}
       >
         {/* Section nav */}
-        <div className="flex w-44 shrink-0 flex-col border-r border-line bg-void-900 p-3">
+        <div className="flex w-44 shrink-0 flex-col border-r border-line/30 bg-void-900/60 p-3">
           <h2 className="wordmark px-2 pb-3 pt-1 text-xs text-fg">Settings</h2>
           {SECTIONS.map((s) => (
             <button
@@ -111,13 +111,15 @@ function AppearancePanel({ theme, onThemeChange }) {
               key={t.id}
               type="button"
               onClick={() => onThemeChange(t.id)}
-              className={`group rounded-lg border p-3 text-left transition-colors ${
-                active ? 'border-krang' : 'border-line hover:border-line-2'
+              className={`group rounded-sm p-3 text-left transition-all ${
+                active
+                  ? 'shadow-[inset_0_0_0_1px_rgb(var(--accent))]'
+                  : 'shadow-[inset_0_0_0_1px_rgb(var(--border-2)/0.3)] hover:shadow-[inset_0_0_0_1px_rgb(var(--border-2)/0.6)]'
               }`}
             >
               {/* Mini preview */}
               <div
-                className="mb-2.5 flex h-16 items-end gap-1.5 rounded-md border border-line p-2"
+                className="mb-2.5 flex h-16 items-end gap-1.5 rounded-sm p-2"
                 style={{ background: t.swatch.bg }}
               >
                 <span
@@ -168,7 +170,7 @@ function DataPanel({ conversationCount, onExportAll, onClearAll }) {
             type="button"
             onClick={onExportAll}
             disabled={conversationCount === 0}
-            className="rounded-md border border-line px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wide text-fg transition-colors hover:border-krang/60 hover:text-krang disabled:cursor-not-allowed disabled:opacity-40"
+            className="btn-ghost px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wide disabled:cursor-not-allowed disabled:opacity-40"
           >
             Export
           </button>
@@ -229,7 +231,7 @@ function SectionTitle({ children }) {
 
 function Row({ title, desc, danger, children }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-line bg-void-800/50 px-4 py-3">
+    <div className="flex items-center justify-between gap-4 rounded-sm bg-void-800/50 px-4 py-3">
       <div className="min-w-0">
         <p className={`font-sans text-sm font-medium ${danger ? 'text-krang-bright' : 'text-fg'}`}>
           {title}

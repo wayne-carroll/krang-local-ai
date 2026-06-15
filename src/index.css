@@ -25,6 +25,11 @@
   --accent: 227 6 19;
   --accent-strong: 255 64 75;
   --accent-contrast: 255 255 255;
+  /* Dark elevation: a TIGHT contact shadow, not a big soft one. A large
+     blurred shadow fading into the near-black bg only has a few tonal steps,
+     so it bands into visible concentric "layers". A small blur keeps the
+     gradient too compressed to band; the crisp panel edge does the separating. */
+  --elev: 0 2px 6px -1px rgb(0 0 0 / 0.55);
 }
 
 /* Carbon — cool slate dark with electric blue. */
@@ -42,6 +47,7 @@
   --accent: 31 111 235;
   --accent-strong: 88 166 255;
   --accent-contrast: 255 255 255;
+  --elev: 0 2px 6px -1px rgb(0 0 0 / 0.55);
 }
 
 /* Paper — warm light with the brand red. */
@@ -59,6 +65,8 @@
   --accent: 209 5 16;
   --accent-strong: 176 4 13;
   --accent-contrast: 255 255 255;
+  /* Light elevation: richer two-layer shadow reads smoothly over the light bg. */
+  --elev: 0 16px 40px -12px rgb(0 0 0 / 0.55), 0 4px 12px -6px rgb(0 0 0 / 0.4);
 }
 
 /* Arctic — cool light with blue. */
@@ -76,6 +84,7 @@
   --accent: 37 99 235;
   --accent-strong: 29 78 216;
   --accent-contrast: 255 255 255;
+  --elev: 0 16px 40px -12px rgb(0 0 0 / 0.55), 0 4px 12px -6px rgb(0 0 0 / 0.4);
 }
 
 html,
@@ -110,6 +119,92 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-weight: 700;
+}
+
+/* ============================================================
+   "KINETIC ARCHIVE" SHARED COMPONENT LANGUAGE
+   Theme-independent rules built on the accent/surface tokens,
+   so every theme inherits the same foundation (only the palette
+   differs). See DESIGN.md (The Kinetic Archive).
+   ============================================================ */
+@layer components {
+  /* Primary CTA: sharp corners, 45° accent→accent-strong "machined"
+     gradient, all-caps technical feel, faint red lift on hover. */
+  .btn-primary {
+    background-image: linear-gradient(
+      45deg,
+      rgb(var(--accent)),
+      rgb(var(--accent-strong))
+    );
+    color: rgb(var(--accent-contrast));
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transition: filter 0.15s ease, box-shadow 0.2s ease, opacity 0.15s ease;
+  }
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(1.08);
+    box-shadow: 0 6px 20px rgb(var(--accent) / 0.35);
+  }
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Secondary / ghost button: no fill, faint "ghost border", accent on hover. */
+  .btn-ghost {
+    background: transparent;
+    border-radius: 2px;
+    box-shadow: inset 0 0 0 1px rgb(var(--border-2) / 0.45);
+    color: rgb(var(--fg-soft));
+    transition: box-shadow 0.15s ease, color 0.15s ease;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    box-shadow: inset 0 0 0 1px rgb(var(--accent) / 0.6);
+    color: rgb(var(--accent-strong));
+  }
+
+  /* Input: tonal surface with a 2px bottom-only border that turns accent on
+     focus (no full box border — per the "no-line" rule). */
+  .input-line {
+    background-color: rgb(var(--surface-2));
+    border: 0;
+    border-bottom: 2px solid rgb(var(--border-2) / 0.6);
+    border-radius: 2px 2px 0 0;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  .input-line::placeholder {
+    color: rgb(var(--faint));
+  }
+  .input-line:focus,
+  .input-line:focus-within {
+    outline: none;
+    border-bottom-color: rgb(var(--accent));
+    background-color: rgb(var(--surface));
+  }
+
+  /* Floating panel (dropdowns, modals): solid surface lifted by the per-theme
+     `--elev` shadow plus a crisp ghost edge. Elevation is theme-specific: light
+     themes can take a richer two-layer shadow (lots of tonal range = smooth),
+     but on dark themes a strong black shadow fading into a near-black page
+     bands badly, so dark themes use a single, soft, low-opacity shadow and lean
+     on the lighter surface + edge for separation. */
+  .panel {
+    background-color: rgb(var(--surface));
+    box-shadow: var(--elev), inset 0 0 0 1px rgb(var(--border-2) / 0.5);
+    border-radius: 4px;
+  }
+
+  /* Sharp technical chip (material-tag style) — never a pill. */
+  .chip {
+    border-radius: 2px;
+    box-shadow: inset 0 0 0 1px rgb(var(--border-2) / 0.4);
+  }
+  .chip-active {
+    background-color: rgb(var(--accent));
+    color: rgb(var(--accent-contrast));
+    box-shadow: none;
+  }
 }
 
 /* Thin scrollbars; thumb turns accent on hover. */

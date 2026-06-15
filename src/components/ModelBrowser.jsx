@@ -55,11 +55,11 @@ export default function ModelBrowser({ installedNames, pulls, onInstall, onCance
       onMouseDown={onClose}
     >
       <div
-        className="hud-corner flex max-h-[85vh] w-full max-w-2xl animate-risefade flex-col overflow-hidden rounded-xl border border-krang/30 bg-void-850 shadow-glow-lg"
+        className="hud-corner panel flex max-h-[85vh] w-full max-w-2xl animate-risefade flex-col overflow-hidden"
         onMouseDown={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-void-700 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-line/30 px-5 py-4">
           <div>
             <h2 className="wordmark text-sm font-bold text-fg">MODEL REGISTRY</h2>
             <p className="mt-0.5 font-mono text-[11px] text-faint">
@@ -78,13 +78,13 @@ export default function ModelBrowser({ installedNames, pulls, onInstall, onCance
         </div>
 
         {/* Search + category filter */}
-        <div className="space-y-3 border-b border-void-700 px-5 py-3">
+        <div className="space-y-3 border-b border-line/30 px-5 py-3">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="search models…"
-            className="w-full rounded-md border border-void-600 bg-void-800 px-3 py-2 font-mono text-sm text-fg placeholder-faint outline-none transition-colors focus:border-krang/60 focus:shadow-glow-sm"
+            className="input-line w-full px-3 py-2 font-mono text-sm text-fg"
           />
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap gap-1.5">
@@ -93,9 +93,9 @@ export default function ModelBrowser({ installedNames, pulls, onInstall, onCance
                   key={cat}
                   type="button"
                   onClick={() => setCategory(cat)}
-                  className={`rounded-full px-3 py-1 font-mono text-[11px] font-medium uppercase tracking-wide transition-colors ${
+                  className={`chip px-3 py-1 font-mono text-[11px] font-medium uppercase tracking-wide transition-colors ${
                     category === cat
-                      ? 'bg-krang text-accent-contrast shadow-glow-sm'
+                      ? 'chip-active'
                       : 'bg-void-800 text-muted hover:bg-void-700 hover:text-fg'
                   }`}
                 >
@@ -108,10 +108,10 @@ export default function ModelBrowser({ installedNames, pulls, onInstall, onCance
               type="button"
               onClick={() => setInstalledOnly((v) => !v)}
               aria-pressed={installedOnly}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[11px] font-medium uppercase tracking-wide transition-colors ${
+              className={`chip inline-flex items-center gap-1.5 px-3 py-1 font-mono text-[11px] font-medium uppercase tracking-wide transition-colors ${
                 installedOnly
-                  ? 'bg-krang text-accent-contrast shadow-glow-sm'
-                  : 'border border-void-600 bg-void-800 text-muted hover:bg-void-700 hover:text-fg'
+                  ? 'chip-active'
+                  : 'bg-void-800 text-muted hover:bg-void-700 hover:text-fg'
               }`}
             >
               <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
@@ -161,12 +161,12 @@ function ModelRow({ model, installed, pull, onInstall, onCancel, onUninstall }) 
   const hasError = pull && pull.phase === 'error'
 
   return (
-    <li className="rounded-lg border border-void-700 bg-void-800/60 px-4 py-3 transition-colors hover:border-void-600">
+    <li className="rounded-sm bg-void-800/70 px-4 py-3 transition-colors hover:bg-void-700/50">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-sans font-semibold text-fg">{model.label}</span>
-            <span className="rounded border border-void-600 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-krang/70">
+            <span className="chip px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-krang/70">
               {model.category}
             </span>
           </div>
@@ -179,12 +179,12 @@ function ModelRow({ model, installed, pull, onInstall, onCancel, onUninstall }) 
         {/* Action */}
         <div className="shrink-0">
           {isRemoving ? (
-            <span className="inline-flex items-center rounded-md border border-void-600 px-2.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-wide text-muted">
+            <span className="chip inline-flex items-center px-2.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-wide text-muted">
               Removing…
             </span>
           ) : installed ? (
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-md border border-krang/30 bg-krang/10 px-2.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-wide text-krang-bright">
+              <span className="inline-flex items-center gap-1 rounded-sm bg-krang/10 px-2.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-wide text-krang-bright shadow-[inset_0_0_0_1px_rgb(var(--accent)/0.3)]">
                 <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                   <path
                     fillRule="evenodd"
@@ -198,7 +198,7 @@ function ModelRow({ model, installed, pull, onInstall, onCancel, onUninstall }) 
                 type="button"
                 onClick={onUninstall}
                 title={`Uninstall ${model.name}`}
-                className="rounded-md border border-void-600 p-1.5 text-muted transition-colors hover:border-red-500/60 hover:text-red-400"
+                className="btn-ghost p-1.5 text-muted hover:text-red-400"
               >
                 <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                   <path
@@ -213,7 +213,7 @@ function ModelRow({ model, installed, pull, onInstall, onCancel, onUninstall }) 
             <button
               type="button"
               onClick={onCancel}
-              className="rounded-md border border-void-600 px-2.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-wide text-muted transition-colors hover:border-krang/50 hover:text-krang"
+              className="btn-ghost px-2.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-wide"
             >
               Cancel
             </button>
@@ -221,7 +221,7 @@ function ModelRow({ model, installed, pull, onInstall, onCancel, onUninstall }) 
             <button
               type="button"
               onClick={onInstall}
-              className="rounded-md border border-krang/50 bg-krang/15 px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wide text-krang-bright transition-all hover:bg-krang hover:text-accent-contrast hover:shadow-glow"
+              className="btn-primary px-3 py-1.5 font-mono text-[11px] font-semibold tracking-wide"
             >
               {hasError ? 'Retry' : 'Install'}
             </button>

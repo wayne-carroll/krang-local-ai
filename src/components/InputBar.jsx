@@ -34,8 +34,8 @@ export default function InputBar({ onSend, onStop, isStreaming, disabled }) {
   }
 
   return (
-    <div className="relative z-10 border-t border-void-700 bg-void-900/80 px-4 py-3 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-[820px] items-end gap-2 rounded-lg border border-void-600 bg-void-800 px-3 py-2 transition-all focus-within:border-krang/60 focus-within:shadow-glow-sm">
+    <div className="relative z-10 bg-void-900/80 px-4 py-3 shadow-[inset_0_1px_0_rgb(var(--border-2)/0.18)] backdrop-blur-sm">
+      <div className="input-line mx-auto flex max-w-[820px] items-end gap-2 px-3 py-2">
         <span className="pb-2 font-mono text-krang/60 select-none">{'>'}</span>
         <textarea
           ref={textareaRef}
@@ -69,7 +69,7 @@ export default function InputBar({ onSend, onStop, isStreaming, disabled }) {
             onClick={submit}
             disabled={!text.trim() || disabled}
             title="Send"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-krang/50 bg-krang/15 text-krang-bright transition-all hover:bg-krang hover:text-accent-contrast hover:shadow-glow disabled:cursor-not-allowed disabled:border-void-600 disabled:bg-void-800 disabled:text-faint disabled:shadow-none"
+            className="btn-primary flex h-9 w-9 shrink-0 items-center justify-center"
           >
             <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path d="M3.4 2.6a1 1 0 011.05-.16l12 5.5a1 1 0 010 1.82l-12 5.5A1 1 0 013 14.3l1.6-4.3L11 9 4.6 8 3 3.7a1 1 0 01.4-1.1z" />

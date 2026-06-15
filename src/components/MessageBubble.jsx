@@ -17,10 +17,10 @@ export default function MessageBubble({ role, content }) {
       <div className={`flex max-w-[760px] gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
         {/* Avatar */}
         <div
-          className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-xs font-semibold ${
+          className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-semibold ${
             isUser
-              ? 'border-void-600 bg-void-800 font-mono text-muted'
-              : 'border-krang/40 bg-void-850 text-krang'
+              ? 'bg-void-800 font-mono text-muted'
+              : 'bg-void-850 text-krang shadow-[inset_0_0_0_1px_rgb(var(--accent)/0.4)]'
           }`}
         >
           {isUser ? 'YOU' : <KrangLogo size={16} glow={false} />}
@@ -30,8 +30,8 @@ export default function MessageBubble({ role, content }) {
         <div
           className={`min-w-0 rounded-lg px-4 py-2.5 text-[15px] ${
             isUser
-              ? 'border border-void-600 bg-void-800 font-sans text-fg'
-              : 'border border-krang/20 bg-void-850/80 text-fg shadow-hud'
+              ? 'bg-void-800 font-sans text-fg'
+              : 'bg-void-850/80 text-fg shadow-hud'
           }`}
         >
           {isUser ? (

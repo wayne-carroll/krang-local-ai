@@ -66,7 +66,7 @@ export default function ContextGauge({
         type="button"
         onClick={() => setOpen((o) => !o)}
         title="Context window usage"
-        className="flex h-8 items-center gap-2 rounded-md border border-void-600 bg-void-800 px-2.5 transition-all hover:border-krang/60 hover:shadow-glow-sm"
+        className="btn-ghost flex h-8 items-center gap-2 px-2.5"
       >
         <span
           className={`relative inline-flex ${nearFull ? 'animate-pulseglow' : ''}`}
@@ -105,7 +105,7 @@ export default function ContextGauge({
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-72 animate-risefade rounded-lg border border-void-600 bg-void-850 p-3 text-sm shadow-glow-lg">
+        <div className="panel absolute right-0 z-20 mt-2 w-72 animate-risefade p-3 text-sm">
           <div className="mb-2 flex items-center justify-between">
             <span className="font-mono text-[11px] uppercase tracking-wider text-krang/80">context buffer</span>
             <span className="font-mono tabular-nums text-muted">
@@ -136,7 +136,7 @@ export default function ContextGauge({
             <select
               value={limit}
               onChange={(e) => onChangeWindow(Number(e.target.value))}
-              className="rounded-md border border-void-600 bg-void-900 px-2 py-1 font-mono text-xs text-fg outline-none focus:border-krang/60"
+              className="input-line px-2 py-1 font-mono text-xs text-fg"
             >
               {windowOptions.map((w) => (
                 <option key={w} value={w}>
@@ -167,7 +167,7 @@ export default function ContextGauge({
             type="button"
             onClick={onCompact}
             disabled={!canCompact}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-krang/50 bg-krang/15 px-3 py-2 font-mono text-xs font-semibold uppercase tracking-wider text-krang-bright transition-all hover:bg-krang hover:text-accent-contrast hover:shadow-glow disabled:cursor-not-allowed disabled:border-void-600 disabled:bg-void-800 disabled:text-faint disabled:shadow-none"
+            className="btn-primary mt-3 flex w-full items-center justify-center gap-2 px-3 py-2 font-mono text-xs font-semibold tracking-wider disabled:bg-none disabled:bg-void-800 disabled:text-faint"
           >
             {isCompacting ? (
               <>

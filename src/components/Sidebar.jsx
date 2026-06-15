@@ -4,12 +4,12 @@
  */
 export default function Sidebar({ conversations, activeId, onNew, onSelect, onDelete, onOpenSettings }) {
   return (
-    <aside className="flex h-full w-[260px] shrink-0 flex-col border-r border-void-700 bg-void-850/70 backdrop-blur-sm">
+    <aside className="flex h-full w-[260px] shrink-0 flex-col bg-void-850/70 shadow-[inset_-1px_0_0_rgb(var(--border-2)/0.18)] backdrop-blur-sm">
       <div className="p-3">
         <button
           type="button"
           onClick={onNew}
-          className="group flex w-full items-center justify-center gap-2 rounded-md border border-krang/40 bg-krang/10 px-3 py-2 font-mono text-xs font-semibold uppercase tracking-wider text-krang-bright transition-all hover:border-krang hover:bg-krang/20 hover:shadow-glow-sm"
+          className="btn-primary group flex w-full items-center justify-center gap-2 px-3 py-2 font-mono text-xs font-semibold tracking-wider"
         >
           <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
             <path d="M10 4a.75.75 0 01.75.75v4.5h4.5a.75.75 0 010 1.5h-4.5v4.5a.75.75 0 01-1.5 0v-4.5h-4.5a.75.75 0 010-1.5h4.5v-4.5A.75.75 0 0110 4z" />
@@ -75,7 +75,7 @@ export default function Sidebar({ conversations, activeId, onNew, onSelect, onDe
       </div>
 
       {/* Footer: settings (gear) + local-only note. */}
-      <div className="border-t border-void-700 p-2">
+      <div className="p-2 shadow-[inset_0_1px_0_rgb(var(--border-2)/0.18)]">
         <button
           type="button"
           onClick={onOpenSettings}

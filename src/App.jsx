@@ -543,7 +543,7 @@ export default function App() {
   return (
     <div className="flex h-full flex-col bg-void-900">
       {/* Fixed header — z-30 keeps its dropdowns above the chat body below. */}
-      <header className="relative z-30 flex h-14 shrink-0 items-center justify-between border-b border-line bg-void-950/85 px-4 backdrop-blur-xl">
+      <header className="relative z-30 flex h-14 shrink-0 items-center justify-between bg-void-950/85 px-4 shadow-[inset_0_-1px_0_rgb(var(--border-2)/0.18)] backdrop-blur-xl">
         <div className="flex items-center gap-2.5">
           <span className="text-krang">
             <KrangLogo size={24} />
@@ -581,7 +581,7 @@ export default function App() {
             type="button"
             onClick={() => setBrowserOpen(true)}
             title="Manage models"
-            className="flex h-8 items-center gap-1.5 rounded-md border border-void-600 bg-void-800 px-2.5 font-mono text-xs font-medium uppercase tracking-wide text-fg transition-all hover:border-krang/60 hover:text-krang hover:shadow-glow-sm"
+            className="btn-ghost flex h-8 items-center gap-1.5 px-2.5 font-mono text-xs font-medium uppercase tracking-wide"
           >
             <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path d="M4.25 2A2.25 2.25 0 002 4.25v2.5A2.25 2.25 0 004.25 9h2.5A2.25 2.25 0 009 6.75v-2.5A2.25 2.25 0 006.75 2h-2.5zm0 9A2.25 2.25 0 002 13.25v2.5A2.25 2.25 0 004.25 18h2.5A2.25 2.25 0 009 15.75v-2.5A2.25 2.25 0 006.75 11h-2.5zm9-9A2.25 2.25 0 0011 4.25v2.5A2.25 2.25 0 0013.25 9h2.5A2.25 2.25 0 0018 6.75v-2.5A2.25 2.25 0 0015.75 2h-2.5zm0 9A2.25 2.25 0 0011 13.25v2.5A2.25 2.25 0 0013.25 18h2.5A2.25 2.25 0 0018 15.75v-2.5A2.25 2.25 0 0015.75 11h-2.5z" />
