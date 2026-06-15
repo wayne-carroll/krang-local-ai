@@ -52,9 +52,10 @@ export default function ContextGauge({
   const color = ringColor(ratio)
   const nearFull = ratio >= DANGER_RATIO
 
-  // SVG ring geometry.
-  const size = 30
-  const stroke = 3.5
+  // SVG ring geometry. Keep `size` comfortably under the button's h-8 (32px)
+  // so the ring doesn't touch the top/bottom edges.
+  const size = 22
+  const stroke = 3
   const r = (size - stroke) / 2
   const circumference = 2 * Math.PI * r
   const dash = circumference * ratio

@@ -26,10 +26,12 @@ export default function ChatWindow({ messages, isStreaming, awaitingFirstToken }
               <KrangLogo size={52} />
             </span>
             <div>
-              <p className="font-display text-[11px] font-medium uppercase tracking-[0.35em] text-krang">
+              {/* pl compensates each line's trailing letter-spacing so the
+                  glyphs sit on true center (and align with each other). */}
+              <p className="pl-[0.35em] font-display text-[11px] font-medium uppercase tracking-[0.35em] text-krang">
                 Local AI
               </p>
-              <h2 className="wordmark mt-2 text-2xl text-fg">Krang</h2>
+              <h2 className="wordmark mt-2 pl-[0.18em] text-2xl text-fg">Krang</h2>
             </div>
             <p className="max-w-sm font-sans text-sm leading-relaxed text-muted">
               Select a model and send a message. Responses stream live from your local Ollama
