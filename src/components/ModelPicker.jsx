@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { describeModel } from '../lib/modelDescriptions.js'
+import { describeModel, categorizeModel } from '../lib/modelDescriptions.js'
 
 /**
  * Custom dropdown for selecting the active model. We use a custom popover
@@ -72,11 +72,17 @@ export default function ModelPicker({ models, selected, onSelect, disabled }) {
               >
                 <span className="flex w-full items-center justify-between gap-2">
                   <span className="truncate font-mono text-sm font-medium text-fg">{m.name}</span>
-                  {isActive && (
-                    <span className="shrink-0 font-mono text-[10px] uppercase tracking-wider text-krang">
-                      active
+                  <span className="flex shrink-0 items-center gap-2">
+                    {/* Coarse category, matched fuzzily from the model name. */}
+                    <span className="rounded border border-void-600 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-krang/70">
+                      {categorizeModel(m.name)}
                     </span>
-                  )}
+                    {isActive && (
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-krang">
+                        active
+                      </span>
+                    )}
+                  </span>
                 </span>
                 <span className="font-sans text-xs leading-snug text-faint">
                   {describeModel(m.name)}

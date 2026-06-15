@@ -177,6 +177,29 @@ export async function pullModel({ name, signal, onProgress }) {
 }
 
 /**
+ * Delete (uninstall) an installed model via DELETE /api/delete. This removes
+ * the model's weights from disk; it is not recoverable without pulling again.
+ *
+ * @param {string} name model tag to delete, e.g. "llama3.1:8b"
+ * @throws {OllamaOfflineError} when the server can't be reached.
+ */
+export async function deleteModel(name) {
+  let res
+  try {
+    res = await fetch(`${OLLAMA_BASE}/api/delete`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    })
+  } catch (err) {
+    throw new OllamaOfflineError()
+  }
+  if (!res.ok) {
+    throw new Error(`Delete failed (HTTP ${res.status})`)
+  }
+}
+
+/**
  * Look up a model's maximum context length via POST /api/show. Ollama returns
  * architecture details under `model_info`, where the relevant key ends with
  * ".context_length" (e.g. "llama.context_length", "qwen2.context_length").
