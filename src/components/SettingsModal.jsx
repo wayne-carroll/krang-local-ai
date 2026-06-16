@@ -72,6 +72,7 @@ export default function SettingsModal({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close settings"
             className="absolute right-4 top-4 rounded-md p-1.5 text-muted transition-colors hover:bg-void-700 hover:text-krang"
           >
             <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

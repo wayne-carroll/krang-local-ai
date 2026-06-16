@@ -10,6 +10,10 @@ const CHARS_PER_TOKEN = 4
 // Rough per-message overhead from chat-template role markers / separators.
 const PER_MESSAGE_OVERHEAD = 4
 
+// Fraction of the context window at which the gauge turns "danger" red and
+// auto-compact fires. Shared so the visual warning and the action stay in sync.
+export const COMPACT_THRESHOLD = 0.85
+
 export function estimateTokens(text = '') {
   return Math.ceil((text || '').length / CHARS_PER_TOKEN)
 }

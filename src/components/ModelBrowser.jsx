@@ -69,6 +69,7 @@ export default function ModelBrowser({ installedNames, pulls, onInstall, onCance
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close model registry"
             className="rounded-md p-1.5 text-muted transition-colors hover:bg-void-700 hover:text-krang"
           >
             <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -198,6 +199,7 @@ function ModelRow({ model, installed, pull, onInstall, onCancel, onUninstall }) 
                 type="button"
                 onClick={onUninstall}
                 title={`Uninstall ${model.name}`}
+                aria-label={`Uninstall ${model.name}`}
                 className="btn-ghost p-1.5 text-muted hover:text-red-400"
               >
                 <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

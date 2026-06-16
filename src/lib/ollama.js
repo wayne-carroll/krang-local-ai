@@ -77,6 +77,34 @@ export async function streamChat({ model, messages, signal, options, onToken }) 
   let full = ''
   let stats = null
 
+  // Parse one newline-delimited JSON object and fold it into the result.
+  const processLine = (line) => {
+    const trimmed = line.trim()
+    if (!trimmed) return
+    let json
+    try {
+      json = JSON.parse(trimmed)
+    } catch {
+      // Skip malformed/partial lines defensively.
+      return
+    }
+    const token = json?.message?.content
+    if (token) {
+      full += token
+      onToken(token)
+    }
+    // The final chunk (done: true) carries exact token accounting.
+    if (json.done) {
+      stats = {
+        prompt_eval_count: json.prompt_eval_count ?? 0,
+        eval_count: json.eval_count ?? 0,
+      }
+    }
+    if (json.error) {
+      throw new Error(json.error)
+    }
+  }
+
   // Read the stream chunk-by-chunk. Each chunk may contain zero or more
   // complete JSON lines plus a trailing partial line we carry in `buffer`.
   while (true) {
@@ -88,33 +116,11 @@ export async function streamChat({ model, messages, signal, options, onToken }) 
     // Keep the last element — it may be an incomplete line.
     buffer = lines.pop()
 
-    for (const line of lines) {
-      const trimmed = line.trim()
-      if (!trimmed) continue
-      let json
-      try {
-        json = JSON.parse(trimmed)
-      } catch {
-        // Skip malformed/partial lines defensively.
-        continue
-      }
-      const token = json?.message?.content
-      if (token) {
-        full += token
-        onToken(token)
-      }
-      // The final chunk (done: true) carries exact token accounting.
-      if (json.done) {
-        stats = {
-          prompt_eval_count: json.prompt_eval_count ?? 0,
-          eval_count: json.eval_count ?? 0,
-        }
-      }
-      if (json.error) {
-        throw new Error(json.error)
-      }
-    }
+    for (const line of lines) processLine(line)
   }
+  // Flush a final object not terminated by a newline (otherwise the `done`
+  // chunk — and its token stats — could be dropped).
+  processLine(buffer)
 
   return { content: full, stats }
 }
@@ -154,26 +160,30 @@ export async function pullModel({ name, signal, onProgress }) {
   const decoder = new TextDecoder()
   let buffer = ''
 
+  const processLine = (line) => {
+    const trimmed = line.trim()
+    if (!trimmed) return
+    let json
+    try {
+      json = JSON.parse(trimmed)
+    } catch {
+      return
+    }
+    // Ollama reports pull errors (e.g. unknown model) in the stream body.
+    if (json.error) throw new Error(json.error)
+    onProgress(json)
+  }
+
   while (true) {
     const { done, value } = await reader.read()
     if (done) break
     buffer += decoder.decode(value, { stream: true })
     const lines = buffer.split('\n')
     buffer = lines.pop()
-    for (const line of lines) {
-      const trimmed = line.trim()
-      if (!trimmed) continue
-      let json
-      try {
-        json = JSON.parse(trimmed)
-      } catch {
-        continue
-      }
-      // Ollama reports pull errors (e.g. unknown model) in the stream body.
-      if (json.error) throw new Error(json.error)
-      onProgress(json)
-    }
+    for (const line of lines) processLine(line)
   }
+  // Flush a final object not terminated by a newline (e.g. the "success" line).
+  processLine(buffer)
 }
 
 /**

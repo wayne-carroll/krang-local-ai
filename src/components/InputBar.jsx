@@ -57,6 +57,7 @@ export default function InputBar({ onSend, onStop, isStreaming, disabled }) {
             type="button"
             onClick={onStop}
             title="Stop generating"
+            aria-label="Stop generating"
             className="flex h-9 w-9 shrink-0 animate-pulseglow items-center justify-center rounded-md bg-krang text-accent-contrast transition-colors hover:bg-krang-bright"
           >
             <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -69,6 +70,7 @@ export default function InputBar({ onSend, onStop, isStreaming, disabled }) {
             onClick={submit}
             disabled={!text.trim() || disabled}
             title="Send"
+            aria-label="Send message"
             className="btn-primary flex h-9 w-9 shrink-0 items-center justify-center"
           >
             <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

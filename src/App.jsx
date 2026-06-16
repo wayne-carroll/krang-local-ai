@@ -16,7 +16,7 @@ import {
   deleteModel,
   OllamaOfflineError,
 } from './lib/ollama.js'
-import { estimateMessagesTokens } from './lib/tokens.js'
+import { estimateMessagesTokens, COMPACT_THRESHOLD } from './lib/tokens.js'
 import { applyTheme, loadTheme } from './lib/themes.js'
 import { getSkill, loadSkill, SKILL_KEY, DEFAULT_SKILL } from './lib/skills.js'
 
@@ -28,8 +28,6 @@ const AUTOCOMPACT_KEY = 'ollama-chat:auto-compact'
 // Standard window sizes offered in the gauge, filtered to the model's max.
 const WINDOW_CHOICES = [2048, 4096, 8192, 16384, 32768, 65536, 131072]
 const DEFAULT_WINDOW = 8192
-// Fraction of the window at which auto-compact fires (and the ring turns red).
-const AUTO_COMPACT_RATIO = 0.85
 // How many trailing user/assistant messages to keep verbatim when compacting.
 const KEEP_RECENT = 4
 
@@ -134,9 +132,13 @@ export default function App() {
 
   // Window sizes to offer: standard choices up to the model's max, plus the
   // current value and the max itself so nothing is ever unselectable.
-  const windowOptions = Array.from(
-    new Set([...WINDOW_CHOICES.filter((w) => w <= modelMaxCtx), modelMaxCtx, numCtx])
-  ).sort((a, b) => a - b)
+  const windowOptions = useMemo(
+    () =>
+      Array.from(
+        new Set([...WINDOW_CHOICES.filter((w) => w <= modelMaxCtx), modelMaxCtx, numCtx])
+      ).sort((a, b) => a - b),
+    [modelMaxCtx, numCtx]
+  )
 
   // Real user/assistant/summary message count (ignores UI-only dividers).
   const realMessageCount = messages.filter((m) => m.role !== 'divider').length
@@ -477,7 +479,7 @@ export default function App() {
     }
 
     // Auto-compact once the turn settled past the threshold (if enabled).
-    if (succeeded && autoCompact && numCtx > 0 && finalUsed / numCtx >= AUTO_COMPACT_RATIO) {
+    if (succeeded && autoCompact && numCtx > 0 && finalUsed / numCtx >= COMPACT_THRESHOLD) {
       await compactConversation(convId)
     }
   }

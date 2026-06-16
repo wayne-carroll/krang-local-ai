@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { formatTokens } from '../lib/tokens.js'
+import { formatTokens, COMPACT_THRESHOLD } from '../lib/tokens.js'
 
 // Visual thresholds for the ring intensity and "compact recommended" hint.
+// DANGER (red + auto-compact) is the shared COMPACT_THRESHOLD so the warning
+// and the action stay in lockstep.
 const WARN_RATIO = 0.6
-const DANGER_RATIO = 0.85
+const DANGER_RATIO = COMPACT_THRESHOLD
 
 // Accent-tinted ring; intensifies toward the limit. Uses theme CSS vars so it
 // follows the active theme.

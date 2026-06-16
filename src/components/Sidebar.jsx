@@ -90,6 +90,7 @@ export default function Sidebar({ conversations, activeId, onNew, onSelect, onDe
                       type="button"
                       onClick={() => onDelete(c.id)}
                       title="Delete conversation"
+                      aria-label={`Delete conversation: ${c.title || 'New Chat'}`}
                       className="shrink-0 rounded p-1 text-faint opacity-0 transition-all hover:text-krang group-hover:opacity-100"
                     >
                       <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

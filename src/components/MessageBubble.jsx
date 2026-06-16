@@ -42,7 +42,7 @@ export default function MessageBubble({ role, content }) {
               <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeKatex]}
-                components={{ code: CodeBlock }}
+                components={{ code: CodeBlock, a: SafeLink }}
               >
                 {content}
               </ReactMarkdown>
@@ -52,4 +52,10 @@ export default function MessageBubble({ role, content }) {
       </div>
     </div>
   )
+}
+
+// Open model-generated links in a new tab, and harden them against reverse
+// tabnabbing (the opened page can't reach window.opener).
+function SafeLink({ node, ...props }) {
+  return <a {...props} target="_blank" rel="noreferrer noopener" />
 }
