@@ -1,8 +1,13 @@
 // Curated catalog of popular Ollama models for the one-click model browser.
 //
-// `name` is the exact tag passed to `ollama pull` (and POST /api/pull). Sizes
-// are approximate download sizes for the default quantization and are shown to
-// help users gauge disk/time cost — they are not exact.
+// `name` is the exact tag passed to `ollama pull` (and POST /api/pull). `size`
+// is the approximate download size for the default quantization.
+//
+// The metadata fields (publisher, parameters, context, license) are curated by
+// hand from each model's official model card / the Ollama library. They are
+// static (no network calls at runtime) and approximate. For installed models
+// the browser overlays exact specs from the local /api/show. Update them when
+// adding models or when publishers ship new versions.
 //
 // Keep this list reasonably small and well-maintained rather than exhaustive.
 
@@ -15,6 +20,10 @@ export const MODEL_CATALOG = [
     label: 'Llama 3.2 3B',
     category: 'General',
     size: '2.0 GB',
+    publisher: 'Meta',
+    parameters: '3B',
+    context: '128K',
+    license: 'Llama 3.2 Community',
     description: "Meta's compact Llama 3.2. Fast, capable general chat that runs well on most machines.",
   },
   {
@@ -22,6 +31,10 @@ export const MODEL_CATALOG = [
     label: 'Llama 3.1 8B',
     category: 'General',
     size: '4.7 GB',
+    publisher: 'Meta',
+    parameters: '8B',
+    context: '128K',
+    license: 'Llama 3.1 Community',
     description: "Meta's popular 8B. Excellent all-around model for chat, writing, and reasoning.",
   },
   {
@@ -29,6 +42,10 @@ export const MODEL_CATALOG = [
     label: 'Llama 3.3 70B',
     category: 'General',
     size: '43 GB',
+    publisher: 'Meta',
+    parameters: '70B',
+    context: '128K',
+    license: 'Llama 3.3 Community',
     description: "Meta's flagship 70B. Top-tier quality, but needs a powerful machine and lots of RAM.",
   },
   {
@@ -36,6 +53,10 @@ export const MODEL_CATALOG = [
     label: 'Gemma 3 4B',
     category: 'General',
     size: '3.3 GB',
+    publisher: 'Google',
+    parameters: '4B',
+    context: '128K',
+    license: 'Gemma',
     description: "Google's Gemma 3. Strong reasoning and multilingual ability in a small footprint.",
   },
   {
@@ -43,6 +64,10 @@ export const MODEL_CATALOG = [
     label: 'Gemma 3 12B',
     category: 'General',
     size: '8.1 GB',
+    publisher: 'Google',
+    parameters: '12B',
+    context: '128K',
+    license: 'Gemma',
     description: 'Google Gemma 3, 12B. A great balance of quality and speed for everyday use.',
   },
   {
@@ -50,6 +75,10 @@ export const MODEL_CATALOG = [
     label: 'Gemma 3 27B',
     category: 'General',
     size: '17 GB',
+    publisher: 'Google',
+    parameters: '27B',
+    context: '128K',
+    license: 'Gemma',
     description: 'Google Gemma 3, 27B. High quality for demanding tasks on capable hardware.',
   },
   {
@@ -57,6 +86,10 @@ export const MODEL_CATALOG = [
     label: 'Qwen 2.5 7B',
     category: 'General',
     size: '4.7 GB',
+    publisher: 'Alibaba',
+    parameters: '7B',
+    context: '128K',
+    license: 'Apache 2.0',
     description: "Alibaba's Qwen 2.5. Strong multilingual support and instruction following.",
   },
   {
@@ -64,6 +97,10 @@ export const MODEL_CATALOG = [
     label: 'Qwen 2.5 14B',
     category: 'General',
     size: '9.0 GB',
+    publisher: 'Alibaba',
+    parameters: '14B',
+    context: '128K',
+    license: 'Apache 2.0',
     description: 'Qwen 2.5 14B. A higher-quality general model with broad knowledge.',
   },
   {
@@ -71,6 +108,10 @@ export const MODEL_CATALOG = [
     label: 'Mistral 7B',
     category: 'General',
     size: '4.1 GB',
+    publisher: 'Mistral AI',
+    parameters: '7B',
+    context: '32K',
+    license: 'Apache 2.0',
     description: 'Mistral 7B. Fast and efficient for summarization, Q&A, and everyday tasks.',
   },
   {
@@ -78,6 +119,10 @@ export const MODEL_CATALOG = [
     label: 'Mistral Nemo 12B',
     category: 'General',
     size: '7.1 GB',
+    publisher: 'Mistral AI',
+    parameters: '12B',
+    context: '128K',
+    license: 'Apache 2.0',
     description: 'Mistral Nemo. Larger context window and strong general performance.',
   },
   {
@@ -85,6 +130,10 @@ export const MODEL_CATALOG = [
     label: 'Mixtral 8x7B',
     category: 'General',
     size: '26 GB',
+    publisher: 'Mistral AI',
+    parameters: '8x7B (MoE)',
+    context: '32K',
+    license: 'Apache 2.0',
     description: 'Mixtral mixture-of-experts. High quality; activates only part of the model per token.',
   },
   {
@@ -92,6 +141,10 @@ export const MODEL_CATALOG = [
     label: 'Phi-4 14B',
     category: 'General',
     size: '9.1 GB',
+    publisher: 'Microsoft',
+    parameters: '14B',
+    context: '16K',
+    license: 'MIT',
     description: "Microsoft's Phi-4. Punches above its weight with strong reasoning for its size.",
   },
 
@@ -101,6 +154,10 @@ export const MODEL_CATALOG = [
     label: 'DeepSeek-R1 1.5B',
     category: 'Reasoning',
     size: '1.1 GB',
+    publisher: 'DeepSeek',
+    parameters: '1.5B',
+    context: '128K',
+    license: 'MIT',
     description: 'A tiny distilled reasoning model. Great for math and logic on light hardware.',
   },
   {
@@ -108,6 +165,10 @@ export const MODEL_CATALOG = [
     label: 'DeepSeek-R1 7B',
     category: 'Reasoning',
     size: '4.7 GB',
+    publisher: 'DeepSeek',
+    parameters: '7B',
+    context: '128K',
+    license: 'MIT',
     description: 'Reasoning-focused. Best for math, logic, and step-by-step problem solving.',
   },
   {
@@ -115,6 +176,10 @@ export const MODEL_CATALOG = [
     label: 'DeepSeek-R1 8B',
     category: 'Reasoning',
     size: '4.9 GB',
+    publisher: 'DeepSeek',
+    parameters: '8B',
+    context: '128K',
+    license: 'MIT',
     description: 'Larger R1 distill. Stronger step-by-step reasoning with modest resource needs.',
   },
   {
@@ -122,6 +187,10 @@ export const MODEL_CATALOG = [
     label: 'QwQ 32B',
     category: 'Reasoning',
     size: '20 GB',
+    publisher: 'Alibaba',
+    parameters: '32B',
+    context: '128K',
+    license: 'Apache 2.0',
     description: "Qwen's QwQ. Deliberate, deep reasoning for hard logic and math problems.",
   },
 
@@ -131,6 +200,10 @@ export const MODEL_CATALOG = [
     label: 'Qwen2.5-Coder 1.5B',
     category: 'Coding',
     size: '1.0 GB',
+    publisher: 'Alibaba',
+    parameters: '1.5B',
+    context: '32K',
+    license: 'Apache 2.0',
     description: 'Tiny coding model. Code completion and small tasks on modest hardware.',
   },
   {
@@ -138,6 +211,10 @@ export const MODEL_CATALOG = [
     label: 'Qwen2.5-Coder 7B',
     category: 'Coding',
     size: '4.7 GB',
+    publisher: 'Alibaba',
+    parameters: '7B',
+    context: '128K',
+    license: 'Apache 2.0',
     description: 'A top open coding model. Best for code generation, debugging, and refactoring.',
   },
   {
@@ -145,6 +222,10 @@ export const MODEL_CATALOG = [
     label: 'Qwen2.5-Coder 14B',
     category: 'Coding',
     size: '9.0 GB',
+    publisher: 'Alibaba',
+    parameters: '14B',
+    context: '128K',
+    license: 'Apache 2.0',
     description: 'Larger Qwen Coder. Higher-quality code generation and reasoning over code.',
   },
   {
@@ -152,6 +233,10 @@ export const MODEL_CATALOG = [
     label: 'Code Llama 7B',
     category: 'Coding',
     size: '3.8 GB',
+    publisher: 'Meta',
+    parameters: '7B',
+    context: '16K',
+    license: 'Llama 2 Community',
     description: "Meta's coding-focused model. Solid code completion and generation.",
   },
   {
@@ -159,6 +244,10 @@ export const MODEL_CATALOG = [
     label: 'CodeGemma 7B',
     category: 'Coding',
     size: '5.0 GB',
+    publisher: 'Google',
+    parameters: '7B',
+    context: '8K',
+    license: 'Gemma',
     description: "Google's CodeGemma. Code completion and generation across many languages.",
   },
   {
@@ -166,6 +255,10 @@ export const MODEL_CATALOG = [
     label: 'StarCoder2 3B',
     category: 'Coding',
     size: '1.7 GB',
+    publisher: 'BigCode',
+    parameters: '3B',
+    context: '16K',
+    license: 'BigCode OpenRAIL-M',
     description: 'Hugging Face StarCoder2. Lightweight code completion across 600+ languages.',
   },
   {
@@ -173,6 +266,10 @@ export const MODEL_CATALOG = [
     label: 'Devstral 24B',
     category: 'Coding',
     size: '14 GB',
+    publisher: 'Mistral AI',
+    parameters: '24B',
+    context: '128K',
+    license: 'Apache 2.0',
     description: "Mistral's coding agent model. Designed for agentic, multi-step coding workflows.",
   },
 
@@ -182,6 +279,10 @@ export const MODEL_CATALOG = [
     label: 'LLaVA 7B',
     category: 'Vision',
     size: '4.7 GB',
+    publisher: 'LLaVA project',
+    parameters: '7B',
+    context: '4K',
+    license: 'Apache 2.0',
     description: 'Multimodal model. Analyze and describe images as well as chat.',
   },
   {
@@ -189,6 +290,10 @@ export const MODEL_CATALOG = [
     label: 'LLaVA 13B',
     category: 'Vision',
     size: '8.0 GB',
+    publisher: 'LLaVA project',
+    parameters: '13B',
+    context: '4K',
+    license: 'Apache 2.0',
     description: 'Larger LLaVA. Better image understanding and richer descriptions.',
   },
   {
@@ -196,6 +301,10 @@ export const MODEL_CATALOG = [
     label: 'Moondream 1.8B',
     category: 'Vision',
     size: '1.7 GB',
+    publisher: 'Moondream',
+    parameters: '1.8B',
+    context: '2K',
+    license: 'Apache 2.0',
     description: 'Tiny vision model. Fast image description on low-resource hardware.',
   },
 
@@ -205,6 +314,10 @@ export const MODEL_CATALOG = [
     label: 'Llama 3.2 1B',
     category: 'Compact',
     size: '1.3 GB',
+    publisher: 'Meta',
+    parameters: '1B',
+    context: '128K',
+    license: 'Llama 3.2 Community',
     description: 'Ultra-light Llama. Runs almost anywhere; good for quick, simple tasks.',
   },
   {
@@ -212,6 +325,10 @@ export const MODEL_CATALOG = [
     label: 'Gemma 3 1B',
     category: 'Compact',
     size: '0.8 GB',
+    publisher: 'Google',
+    parameters: '1B',
+    context: '32K',
+    license: 'Gemma',
     description: 'Very small Google model. Surprisingly coherent for its tiny size.',
   },
   {
@@ -219,6 +336,10 @@ export const MODEL_CATALOG = [
     label: 'Qwen 2.5 0.5B',
     category: 'Compact',
     size: '0.4 GB',
+    publisher: 'Alibaba',
+    parameters: '0.5B',
+    context: '32K',
+    license: 'Apache 2.0',
     description: 'The smallest general Qwen. Extremely fast for basic tasks and testing.',
   },
   {
@@ -226,6 +347,10 @@ export const MODEL_CATALOG = [
     label: 'SmolLM2 1.7B',
     category: 'Compact',
     size: '1.1 GB',
+    publisher: 'Hugging Face',
+    parameters: '1.7B',
+    context: '8K',
+    license: 'Apache 2.0',
     description: 'Compact and efficient. A capable small model for constrained devices.',
   },
 ]

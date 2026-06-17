@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { MODEL_CATALOG, MODEL_CATEGORIES } from '../lib/modelCatalog.js'
+import { fetchModelDetails } from '../lib/ollama.js'
 
 /**
  * Modal "model browser". Lists a curated catalog of popular Ollama models with
@@ -49,7 +50,7 @@ export default function ModelBrowser({ installedNames, pulls, onInstall, onCance
   }, [query, category, installedOnly, installedNames])
 
   return (
-    // Backdrop — clicking outside the panel closes.
+    // Backdrop: clicking outside the panel closes.
     <div
       className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
       onMouseDown={onClose}
@@ -160,6 +161,21 @@ function ModelRow({ model, installed, pull, onInstall, onCancel, onUninstall }) 
   const isPulling = pull && pull.phase === 'pulling'
   const isRemoving = pull && pull.phase === 'removing'
   const hasError = pull && pull.phase === 'error'
+  const [expanded, setExpanded] = useState(false)
+  const [live, setLive] = useState(null) // live /api/show specs (installed only)
+
+  // Lazily fetch exact specs from the local daemon when the details open for an
+  // installed model. Static catalog metadata is always shown regardless.
+  useEffect(() => {
+    if (!expanded || !installed || live) return
+    let cancelled = false
+    fetchModelDetails(model.name).then((d) => {
+      if (!cancelled && d) setLive(d)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [expanded, installed, live, model.name])
 
   return (
     <li className="rounded-sm bg-void-800/70 px-4 py-3 transition-colors hover:bg-void-700/50">
@@ -170,6 +186,20 @@ function ModelRow({ model, installed, pull, onInstall, onCancel, onUninstall }) 
             <span className="chip px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-krang/70">
               {model.category}
             </span>
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              aria-label={`Details for ${model.label}`}
+              aria-expanded={expanded}
+              title="Model details"
+              className={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold leading-none ring-1 ring-inset transition-colors ${
+                expanded
+                  ? 'bg-krang/15 text-krang-bright ring-krang/40'
+                  : 'text-faint ring-current/50 hover:text-krang'
+              }`}
+            >
+              i
+            </button>
           </div>
           <p className="mt-0.5 font-sans text-xs leading-snug text-muted">{model.description}</p>
           <p className="mt-1 font-mono text-[11px] text-faint">
@@ -231,6 +261,43 @@ function ModelRow({ model, installed, pull, onInstall, onCancel, onUninstall }) 
         </div>
       </div>
 
+      {/* Details (curated metadata, plus live specs once installed) */}
+      {expanded && (
+        <div className="mt-2.5 rounded-sm bg-void-900/60 px-3 py-2.5 shadow-[inset_0_0_0_1px_rgb(var(--border-2)/0.4)]">
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+            <Spec label="Publisher" value={model.publisher} />
+            <Spec label="Parameters" value={model.parameters} />
+            <Spec label="Context" value={model.context} />
+            <Spec label="License" value={model.license} />
+            <Spec label="Download" value={`~${model.size}`} />
+          </dl>
+
+          {installed && (
+            <div className="mt-2.5 border-t border-line/30 pt-2.5">
+              <p className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-krang/70">
+                installed on this machine
+              </p>
+              {live ? (
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                  <Spec label="Exact size" value={live.parameterSize} />
+                  <Spec label="Quantization" value={live.quantization} />
+                  <Spec
+                    label="Max context"
+                    value={live.contextLength ? live.contextLength.toLocaleString() + ' tok' : null}
+                  />
+                  <Spec
+                    label="Capabilities"
+                    value={live.capabilities?.length ? live.capabilities.join(', ') : null}
+                  />
+                </dl>
+              ) : (
+                <p className="font-mono text-[11px] text-faint">reading local specs…</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Progress / error */}
       {isPulling && (
         <div className="mt-2.5">
@@ -254,5 +321,18 @@ function ModelRow({ model, installed, pull, onInstall, onCancel, onUninstall }) 
         <p className="mt-2 font-mono text-[11px] text-krang-bright">Failed: {pull.error}</p>
       )}
     </li>
+  )
+}
+
+// One label/value pair in the details grid. Hidden when the value is missing.
+function Spec({ label, value }) {
+  if (!value) return null
+  return (
+    <div className="min-w-0">
+      <dt className="font-mono text-[10px] uppercase tracking-wide text-faint">{label}</dt>
+      <dd className="truncate font-sans text-xs text-fg-soft" title={String(value)}>
+        {value}
+      </dd>
+    </div>
   )
 }

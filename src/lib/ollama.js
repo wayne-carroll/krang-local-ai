@@ -276,3 +276,42 @@ export async function fetchModelMaxContext(model) {
   }
   return null
 }
+
+/**
+ * Fetch live spec details for an INSTALLED model via POST /api/show: exact
+ * parameter size, quantization, context length, and capabilities (e.g.
+ * "vision", "tools"). Returns null if the model isn't installed or unreachable.
+ *
+ * @param {string} model
+ * @returns {Promise<{parameterSize, quantization, family, contextLength, capabilities}|null>}
+ */
+export async function fetchModelDetails(model) {
+  let res
+  try {
+    res = await fetch(`${OLLAMA_BASE}/api/show`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model }),
+    })
+  } catch {
+    return null
+  }
+  if (!res.ok) return null
+  const data = await res.json()
+  const info = data.model_info || {}
+  let contextLength = null
+  for (const [key, value] of Object.entries(info)) {
+    if (key.endsWith('.context_length') && typeof value === 'number') {
+      contextLength = value
+      break
+    }
+  }
+  const details = data.details || {}
+  return {
+    parameterSize: details.parameter_size || null,
+    quantization: details.quantization_level || null,
+    family: details.family || null,
+    contextLength,
+    capabilities: Array.isArray(data.capabilities) ? data.capabilities : [],
+  }
+}
