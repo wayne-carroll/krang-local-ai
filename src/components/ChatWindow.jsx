@@ -73,7 +73,7 @@ export default function ChatWindow({ messages, isStreaming, awaitingFirstToken }
               </div>
             )
           }
-          return <MessageBubble key={m.id} role={m.role} content={m.content} />
+          return <MessageBubble key={m.id} role={m.role} content={m.content} images={m.images} />
         })}
 
         {/* Typing indicator: shown after sending while we wait for the first

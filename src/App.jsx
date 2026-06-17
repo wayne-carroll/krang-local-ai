@@ -4,6 +4,7 @@ import ChatWindow from './components/ChatWindow.jsx'
 import InputBar from './components/InputBar.jsx'
 import ModelPicker from './components/ModelPicker.jsx'
 import SkillPicker from './components/SkillPicker.jsx'
+import ParamsPopover from './components/ParamsPopover.jsx'
 import ContextGauge from './components/ContextGauge.jsx'
 import ModelBrowser from './components/ModelBrowser.jsx'
 import SettingsModal from './components/SettingsModal.jsx'
@@ -19,6 +20,7 @@ import {
 import { estimateMessagesTokens, COMPACT_THRESHOLD } from './lib/tokens.js'
 import { applyTheme, loadTheme } from './lib/themes.js'
 import { getSkill, loadSkill, SKILL_KEY, DEFAULT_SKILL } from './lib/skills.js'
+import { loadParams, buildOptions, PARAMS_KEY, DEFAULT_PARAMS } from './lib/params.js'
 
 const STORAGE_KEY = 'ollama-chat:conversations'
 const MODEL_KEY = 'ollama-chat:selected-model'
@@ -80,6 +82,10 @@ export default function App() {
   // open; otherwise it's the choice that will apply to the next new chat. The
   // last choice is persisted as the default for new chats.
   const [skillId, setSkillId] = useState(loadSkill)
+
+  // Generation parameters (temperature, top_p, seed, stop). Same model as
+  // skill: tracks the active conversation, persisted as the new-chat default.
+  const [params, setParams] = useState(loadParams)
 
   // Settings + theme.
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -317,9 +323,10 @@ export default function App() {
   function handleSelectConversation(id) {
     if (isStreaming) return // avoid switching mid-stream
     setActiveId(id)
-    // Reflect the loaded conversation's skill in the picker.
+    // Reflect the loaded conversation's skill + params in the header controls.
     const conv = conversations.find((c) => c.id === id)
     setSkillId(conv?.skill || DEFAULT_SKILL)
+    setParams(conv?.params || { ...DEFAULT_PARAMS })
   }
 
   // Choose the active skill (persona). Persisted as the default for new chats,
@@ -333,6 +340,20 @@ export default function App() {
     }
     if (activeId) {
       setConversations((prev) => prev.map((c) => (c.id === activeId ? { ...c, skill: id } : c)))
+    }
+  }
+
+  // Choose generation parameters. Persisted as the default for new chats, and
+  // applied to the current conversation if one is open.
+  function handleParamsChange(next) {
+    setParams(next)
+    try {
+      localStorage.setItem(PARAMS_KEY, JSON.stringify(next))
+    } catch {
+      // ignore storage failures
+    }
+    if (activeId) {
+      setConversations((prev) => prev.map((c) => (c.id === activeId ? { ...c, params: next } : c)))
     }
   }
 
@@ -379,10 +400,13 @@ export default function App() {
   }
 
   // --- Send + stream ---
-  async function handleSend(text) {
+  // `images` is an array of data URLs (from InputBar); stored on the message
+  // for rendering and stripped to raw base64 when sent to Ollama.
+  async function handleSend(text, images = []) {
     if (!selectedModel) return
 
     const userMsg = { id: genId(), role: 'user', content: text }
+    if (images.length > 0) userMsg.images = images
     const assistantMsg = { id: genId(), role: 'assistant', content: '' }
 
     // Resolve which conversation we're appending to, creating one if needed.
@@ -404,9 +428,10 @@ export default function App() {
       if (creatingNew) {
         const conv = {
           id: convId,
-          title: deriveTitle(text),
+          title: deriveTitle(text || 'Image'),
           model: selectedModel,
           skill: skillId,
+          params,
           messages: [userMsg, assistantMsg],
         }
         return [conv, ...prev]
@@ -436,7 +461,7 @@ export default function App() {
         model: selectedModel,
         messages: apiMessages,
         signal: controller.signal,
-        options: { num_ctx: numCtx },
+        options: buildOptions(numCtx, params),
         onToken: (chunk) => {
           // First token arrived — drop the typing indicator.
           setAwaitingFirstToken(false)
@@ -496,15 +521,19 @@ export default function App() {
   }
 
   // Map our internal message list to the Ollama chat format. UI-only dividers
-  // are dropped; compaction summaries are sent as a system message.
+  // are dropped; compaction summaries are sent as a system message; attached
+  // images are converted from data URLs to the raw base64 Ollama expects.
   function toApiMessages(msgs) {
     return msgs
       .filter((m) => m.role !== 'divider')
-      .map((m) =>
-        m.role === 'summary'
-          ? { role: 'system', content: m.content }
-          : { role: m.role, content: m.content }
-      )
+      .map((m) => {
+        if (m.role === 'summary') return { role: 'system', content: m.content }
+        const out = { role: m.role, content: m.content }
+        if (m.images && m.images.length > 0) {
+          out.images = m.images.map((url) => url.split(',')[1] || url)
+        }
+        return out
+      })
   }
 
   // Compaction: summarize all but the last KEEP_RECENT turns into a single
@@ -604,6 +633,7 @@ export default function App() {
             approximate={usageApproximate}
           />
           <SkillPicker selected={skillId} onSelect={handleSelectSkill} disabled={isStreaming} />
+          <ParamsPopover params={params} onChange={handleParamsChange} disabled={isStreaming} />
           <ModelPicker
             models={models}
             selected={selectedModel}

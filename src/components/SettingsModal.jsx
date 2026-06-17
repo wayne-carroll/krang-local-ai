@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
 import { THEMES } from '../lib/themes.js'
+import {
+  supportsWorkingFolder,
+  pickWorkingFolder,
+  clearWorkingFolder,
+  getWorkingFolderName,
+} from '../lib/fileSave.js'
 
 /**
  * Settings modal with a left section nav. Sections:
@@ -155,6 +161,21 @@ function AppearancePanel({ theme, onThemeChange }) {
 }
 
 function DataPanel({ conversationCount, onExportAll, onClearAll }) {
+  const [folder, setFolder] = useState(getWorkingFolderName())
+  const folderSupported = supportsWorkingFolder()
+
+  async function pickFolder() {
+    try {
+      setFolder(await pickWorkingFolder())
+    } catch {
+      // User dismissed the picker.
+    }
+  }
+  function disconnectFolder() {
+    clearWorkingFolder()
+    setFolder(null)
+  }
+
   return (
     <div>
       <SectionTitle>Data</SectionTitle>
@@ -163,6 +184,43 @@ function DataPanel({ conversationCount, onExportAll, onClearAll }) {
       </p>
 
       <div className="space-y-3">
+        {folderSupported && (
+          <Row
+            title="Working folder"
+            desc={
+              folder
+                ? `“Save” writes straight into “${folder}” (re-connect after reload).`
+                : 'Connect a folder so Save writes files there instead of downloading.'
+            }
+          >
+            {folder ? (
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={pickFolder}
+                  className="btn-ghost px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wide"
+                >
+                  Change
+                </button>
+                <button
+                  type="button"
+                  onClick={disconnectFolder}
+                  className="btn-ghost px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wide"
+                >
+                  Disconnect
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={pickFolder}
+                className="btn-ghost px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wide"
+              >
+                Connect…
+              </button>
+            )}
+          </Row>
+        )}
         <Row
           title="Export conversations"
           desc="Download all chats as a JSON backup file."

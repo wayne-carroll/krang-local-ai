@@ -1,6 +1,17 @@
 import { useState } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { saveText } from '../lib/fileSave.js'
+
+// Map a syntax-highlighter language id to a sensible file extension.
+const LANG_EXT = {
+  javascript: 'js', js: 'js', jsx: 'jsx', typescript: 'ts', ts: 'ts', tsx: 'tsx',
+  python: 'py', py: 'py', ruby: 'rb', go: 'go', rust: 'rs', java: 'java',
+  c: 'c', cpp: 'cpp', csharp: 'cs', php: 'php', swift: 'swift', kotlin: 'kt',
+  html: 'html', css: 'css', scss: 'scss', json: 'json', yaml: 'yaml', yml: 'yml',
+  toml: 'toml', markdown: 'md', md: 'md', sql: 'sql', bash: 'sh', sh: 'sh',
+  shell: 'sh', dockerfile: 'Dockerfile', xml: 'xml',
+}
 
 /**
  * Renders a fenced code block with a language label and a copy-to-clipboard
@@ -10,10 +21,23 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
  * block code by the presence of a `language-xxx` className (set on fenced
  * blocks) or the absence of `inline`.
  */
+// Flatten react-markdown's `children` (string | array | nested nodes) into the
+// raw code text. `String(children)` is unreliable here — an array would be
+// comma-joined and element nodes would stringify to "[object Object]".
+function extractText(node) {
+  if (node == null || node === false) return ''
+  if (typeof node === 'string') return node
+  if (typeof node === 'number') return String(node)
+  if (Array.isArray(node)) return node.map(extractText).join('')
+  if (typeof node === 'object' && node.props) return extractText(node.props.children)
+  return ''
+}
+
 export default function CodeBlock({ inline, className, children, ...props }) {
   const [copied, setCopied] = useState(false)
+  const [saved, setSaved] = useState(false)
   const match = /language-(\w+)/.exec(className || '')
-  const code = String(children).replace(/\n$/, '')
+  const code = extractText(children).replace(/\n$/, '')
 
   // Inline code (e.g. `foo`) — render simply; styled via index.css.
   if (inline || !match) {
@@ -36,6 +60,18 @@ export default function CodeBlock({ inline, className, children, ...props }) {
     }
   }
 
+  async function save() {
+    const ext = LANG_EXT[language] || 'txt'
+    const name = ext === 'Dockerfile' ? 'Dockerfile' : `snippet.${ext}`
+    try {
+      await saveText(name, code)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 1500)
+    } catch {
+      // User cancelled the picker or the write failed; ignore.
+    }
+  }
+
   return (
     <div className="group relative my-3 overflow-hidden rounded-lg border border-white/10 bg-[#0c0c10]">
       <div className="flex items-center justify-between border-b border-white/10 bg-[#15151a] px-3 py-1.5">
@@ -43,32 +79,46 @@ export default function CodeBlock({ inline, className, children, ...props }) {
           <span className="h-1.5 w-1.5 rounded-full bg-krang" />
           {language}
         </span>
-        <button
-          type="button"
-          onClick={copy}
-          className="flex items-center gap-1 rounded px-2 py-0.5 font-mono text-xs text-white/50 transition-colors hover:bg-white/10 hover:text-krang-bright"
-        >
-          {copied ? (
-            <>
-              <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0l-3.5-3.5a1 1 0 011.4-1.4l2.8 2.79 6.8-6.79a1 1 0 011.4 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Copied
-            </>
-          ) : (
-            <>
-              <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M7 5a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2h-1v-1.5h1a.5.5 0 00.5-.5V5a.5.5 0 00-.5-.5H9a.5.5 0 00-.5.5v1H7V5z" />
-                <path d="M3 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2V9zm2-.5a.5.5 0 00-.5.5v6a.5.5 0 00.5.5h6a.5.5 0 00.5-.5V9a.5.5 0 00-.5-.5H5z" />
-              </svg>
-              Copy
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={save}
+            aria-label={`Save code as a file`}
+            className="flex items-center gap-1 rounded px-2 py-0.5 font-mono text-xs text-white/50 transition-colors hover:bg-white/10 hover:text-krang-bright"
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M4 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V6.4a1 1 0 00-.3-.7l-2.4-2.4a1 1 0 00-.7-.3H4zm2 1h6v3H6V4zm-1 8a1 1 0 011-1h8a1 1 0 011 1v4H5v-4z" />
+            </svg>
+            {saved ? 'Saved' : 'Save'}
+          </button>
+          <button
+            type="button"
+            onClick={copy}
+            aria-label="Copy code"
+            className="flex items-center gap-1 rounded px-2 py-0.5 font-mono text-xs text-white/50 transition-colors hover:bg-white/10 hover:text-krang-bright"
+          >
+            {copied ? (
+              <>
+                <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0l-3.5-3.5a1 1 0 011.4-1.4l2.8 2.79 6.8-6.79a1 1 0 011.4 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Copied
+              </>
+            ) : (
+              <>
+                <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M7 5a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2h-1v-1.5h1a.5.5 0 00.5-.5V5a.5.5 0 00-.5-.5H9a.5.5 0 00-.5.5v1H7V5z" />
+                  <path d="M3 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2V9zm2-.5a.5.5 0 00-.5.5v6a.5.5 0 00.5.5h6a.5.5 0 00.5-.5V9a.5.5 0 00-.5-.5H5z" />
+                </svg>
+                Copy
+              </>
+            )}
+          </button>
+        </div>
       </div>
       <SyntaxHighlighter
         language={language}
