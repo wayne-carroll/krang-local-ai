@@ -2,15 +2,29 @@
 // live as CSS variables in index.css (keyed by data-theme). Here we keep just
 // the metadata + preview swatches shown in the picker.
 
-export const DEFAULT_THEME = 'krang'
+export const DEFAULT_THEME = 'mono-dark'
 export const THEME_KEY = 'krang:theme'
 
 export const THEMES = [
   {
+    id: 'mono-dark',
+    name: 'Mono Dark',
+    type: 'Dark',
+    blurb: 'Black background, white text. The default.',
+    swatch: { bg: '#000000', surface: '#121212', accent: '#ffffff', fg: '#ffffff' },
+  },
+  {
+    id: 'mono-light',
+    name: 'Mono Light',
+    type: 'Light',
+    blurb: 'White background, black text.',
+    swatch: { bg: '#ffffff', surface: '#f5f5f5', accent: '#000000', fg: '#000000' },
+  },
+  {
     id: 'krang',
     name: 'Krang',
     type: 'Dark',
-    blurb: 'Pure black & industrial red. The default.',
+    blurb: 'Pure black and industrial red.',
     swatch: { bg: '#131313', surface: '#1b1b1b', accent: '#E30613', fg: '#ffffff' },
   },
   {

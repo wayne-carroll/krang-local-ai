@@ -12,7 +12,7 @@ import { saveText } from '../lib/fileSave.js'
  * images) in a bubble; assistant messages render as markdown with
  * syntax-highlighted code blocks and a copy/save toolbar.
  */
-export default function MessageBubble({ role, content, images }) {
+export default function MessageBubble({ role, content, images, stats }) {
   const isUser = role === 'user'
 
   return (
@@ -63,7 +63,7 @@ export default function MessageBubble({ role, content, images }) {
               >
                 {content}
               </ReactMarkdown>
-              {content && <MessageToolbar content={content} />}
+              {content && <MessageToolbar content={content} stats={stats} />}
             </div>
           )}
         </div>
@@ -72,10 +72,22 @@ export default function MessageBubble({ role, content, images }) {
   )
 }
 
-// Copy / save controls shown on assistant messages (revealed on hover).
-function MessageToolbar({ content }) {
+// Format a tokens/sec + time-to-first-token line, omitting missing parts.
+function formatStats(stats) {
+  if (!stats) return ''
+  const parts = []
+  if (stats.tokensPerSec != null) parts.push(`${stats.tokensPerSec} tok/s`)
+  if (stats.ttftMs != null) {
+    parts.push(stats.ttftMs >= 1000 ? `${(stats.ttftMs / 1000).toFixed(1)}s to first` : `${stats.ttftMs}ms to first`)
+  }
+  return parts.join(' · ')
+}
+
+// Copy / save controls + generation stats on assistant messages (on hover).
+function MessageToolbar({ content, stats }) {
   const [copied, setCopied] = useState(false)
   const [saved, setSaved] = useState(false)
+  const statsLine = formatStats(stats)
 
   async function copy() {
     try {
@@ -114,6 +126,11 @@ function MessageToolbar({ content }) {
       >
         {saved ? 'saved' : 'save .md'}
       </button>
+      {statsLine && (
+        <span className="ml-auto font-mono text-[10px] tracking-wide text-faint" title="generation speed · time to first token">
+          {statsLine}
+        </span>
+      )}
     </div>
   )
 }

@@ -5,8 +5,8 @@
 export const PARAMS_KEY = 'krang:gen-params'
 
 export const DEFAULT_PARAMS = {
-  temperature: null, // 0–2; creativity/randomness
-  top_p: null, // 0–1; nucleus sampling
+  temperature: null, // 0 to 2; creativity/randomness
+  top_p: null, // 0 to 1; nucleus sampling
   seed: null, // integer; fixed seed = reproducible output
   stop: [], // array of stop strings
 }

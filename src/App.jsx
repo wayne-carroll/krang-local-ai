@@ -19,7 +19,17 @@ import {
 } from './lib/ollama.js'
 import { estimateMessagesTokens, COMPACT_THRESHOLD } from './lib/tokens.js'
 import { applyTheme, loadTheme } from './lib/themes.js'
-import { getSkill, loadSkill, SKILL_KEY, DEFAULT_SKILL } from './lib/skills.js'
+import SkillEditor from './components/SkillEditor.jsx'
+import {
+  SKILLS,
+  getSkill,
+  loadSkill,
+  loadCustomSkills,
+  saveCustomSkills,
+  makeSkillId,
+  SKILL_KEY,
+  DEFAULT_SKILL,
+} from './lib/skills.js'
 import { loadParams, buildOptions, PARAMS_KEY, DEFAULT_PARAMS } from './lib/params.js'
 
 const STORAGE_KEY = 'ollama-chat:conversations'
@@ -82,6 +92,11 @@ export default function App() {
   // open; otherwise it's the choice that will apply to the next new chat. The
   // last choice is persisted as the default for new chats.
   const [skillId, setSkillId] = useState(loadSkill)
+  // User-authored skills (merged with built-ins) + the open editor (null,
+  // {} for new, or the skill being edited).
+  const [customSkills, setCustomSkills] = useState(loadCustomSkills)
+  const [skillEditor, setSkillEditor] = useState(null)
+  const allSkills = useMemo(() => [...SKILLS, ...customSkills], [customSkills])
 
   // Generation parameters (temperature, top_p, seed, stop). Same model as
   // skill: tracks the active conversation, persisted as the new-chat default.
@@ -153,14 +168,30 @@ export default function App() {
   // --- Persist conversations + selected model to localStorage ---
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations))
+      // Strip attached image data URLs before persisting. They're large (often
+      // hundreds of KB each) and would quickly blow the ~5 MB localStorage quota
+      // — which silently breaks *other* writes like the pinned model. Images
+      // stay in memory for the session; conversation text always persists.
+      const slim = conversations.map((c) => ({
+        ...c,
+        messages: c.messages.map(({ images, ...rest }) => rest),
+      }))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(slim))
     } catch {
       // Storage can be full or disabled; ignore.
     }
   }, [conversations])
 
+  // Pin the selected model to the session: persist on every change and restore
+  // on load. Wrapped so a full localStorage (e.g. bloated by image data) can't
+  // throw and silently drop the preference.
   useEffect(() => {
-    if (selectedModel) localStorage.setItem(MODEL_KEY, selectedModel)
+    if (!selectedModel) return
+    try {
+      localStorage.setItem(MODEL_KEY, selectedModel)
+    } catch {
+      // storage full/disabled — ignore
+    }
   }, [selectedModel])
 
   useEffect(() => {
@@ -343,6 +374,36 @@ export default function App() {
     }
   }
 
+  // Create or update a custom skill, persist, and select it.
+  function handleSaveSkill({ id, name, system }) {
+    const blurb = system.length > 64 ? system.slice(0, 64).trimEnd() + '…' : system
+    let savedId = id
+    setCustomSkills((prev) => {
+      let next
+      if (id) {
+        next = prev.map((s) => (s.id === id ? { ...s, name, system, blurb } : s))
+      } else {
+        savedId = makeSkillId()
+        next = [...prev, { id: savedId, name, system, blurb, custom: true }]
+      }
+      saveCustomSkills(next)
+      return next
+    })
+    setSkillEditor(null)
+    handleSelectSkill(savedId)
+  }
+
+  // Delete a custom skill; fall back to the default if it was active.
+  function handleDeleteSkill(id) {
+    setCustomSkills((prev) => {
+      const next = prev.filter((s) => s.id !== id)
+      saveCustomSkills(next)
+      return next
+    })
+    setSkillEditor(null)
+    if (skillId === id) handleSelectSkill(DEFAULT_SKILL)
+  }
+
   // Choose generation parameters. Persisted as the default for new chats, and
   // applied to the current conversation if one is open.
   function handleParamsChange(next) {
@@ -418,7 +479,7 @@ export default function App() {
     // active, prepend its system prompt so the model adopts that role.
     const priorMessages = activeConversation ? activeConversation.messages : []
     const apiMessages = toApiMessages([...priorMessages, userMsg])
-    const skill = getSkill(skillId)
+    const skill = getSkill(skillId, customSkills)
     if (skill.system) {
       apiMessages.unshift({ role: 'system', content: skill.system })
     }
@@ -469,6 +530,19 @@ export default function App() {
         },
       })
       succeeded = true
+
+      // Record per-reply performance (shown under the message): generation
+      // speed in tokens/sec (from eval_count / eval_duration) and measured
+      // time-to-first-token.
+      if (stats) {
+        const tokensPerSec =
+          stats.eval_duration > 0
+            ? Math.round(stats.eval_count / (stats.eval_duration / 1e9))
+            : null
+        patchMessage(convId, assistantMsg.id, () => ({
+          stats: { tokensPerSec, ttftMs: stats.ttftMs ?? null, evalCount: stats.eval_count },
+        }))
+      }
 
       // Calibrate the token estimator against Ollama's exact counts so the
       // gauge becomes accurate. `prompt_eval_count` covers everything sent;
@@ -632,7 +706,14 @@ export default function App() {
             onToggleAuto={setAutoCompact}
             approximate={usageApproximate}
           />
-          <SkillPicker selected={skillId} onSelect={handleSelectSkill} disabled={isStreaming} />
+          <SkillPicker
+            skills={allSkills}
+            selected={skillId}
+            onSelect={handleSelectSkill}
+            onNew={() => setSkillEditor({})}
+            onEdit={(s) => setSkillEditor(s)}
+            disabled={isStreaming}
+          />
           <ParamsPopover params={params} onChange={handleParamsChange} disabled={isStreaming} />
           <ModelPicker
             models={models}
@@ -732,6 +813,15 @@ export default function App() {
           onExportAll={handleExportAll}
           onClearAll={handleClearAll}
           onClose={() => setSettingsOpen(false)}
+        />
+      )}
+
+      {skillEditor && (
+        <SkillEditor
+          initial={skillEditor}
+          onSave={handleSaveSkill}
+          onDelete={handleDeleteSkill}
+          onClose={() => setSkillEditor(null)}
         />
       )}
     </div>

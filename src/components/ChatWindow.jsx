@@ -35,7 +35,7 @@ export default function ChatWindow({ messages, isStreaming, awaitingFirstToken }
             </div>
             <p className="max-w-sm font-sans text-sm leading-relaxed text-muted">
               Select a model and send a message. Responses stream live from your local Ollama
-              instance — nothing leaves this machine.
+              instance. Nothing leaves this machine.
             </p>
           </div>
         )}
@@ -73,7 +73,15 @@ export default function ChatWindow({ messages, isStreaming, awaitingFirstToken }
               </div>
             )
           }
-          return <MessageBubble key={m.id} role={m.role} content={m.content} images={m.images} />
+          return (
+            <MessageBubble
+              key={m.id}
+              role={m.role}
+              content={m.content}
+              images={m.images}
+              stats={m.stats}
+            />
+          )
         })}
 
         {/* Typing indicator: shown after sending while we wait for the first

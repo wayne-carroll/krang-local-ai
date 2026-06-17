@@ -3,6 +3,35 @@
 
 export const OLLAMA_BASE = 'http://localhost:11434'
 
+// Extract a human-readable reason from a non-2xx Ollama response. Ollama puts
+// the cause in a JSON `error` field (sometimes double-wrapped); fall back to
+// the raw body or status code so the UI never just says "HTTP 400".
+async function errorDetail(res, fallback) {
+  try {
+    const body = await res.text()
+    let msg = body
+    try {
+      let parsed = JSON.parse(body)
+      // Unwrap one or two layers of { error: ... }.
+      for (let i = 0; i < 2 && parsed && typeof parsed === 'object' && 'error' in parsed; i++) {
+        msg = parsed.error
+        try {
+          parsed = JSON.parse(msg)
+        } catch {
+          parsed = null
+        }
+      }
+      if (parsed && typeof parsed === 'object' && parsed.message) msg = parsed.message
+    } catch {
+      // body wasn't JSON; use it as-is
+    }
+    msg = String(msg).trim()
+    return msg ? `Ollama: ${msg}` : `${fallback} (HTTP ${res.status})`
+  } catch {
+    return `${fallback} (HTTP ${res.status})`
+  }
+}
+
 /**
  * Raised when we can reach the network layer but Ollama itself is unreachable
  * (i.e. `ollama serve` is not running). Lets the UI distinguish "not running"
@@ -68,7 +97,7 @@ export async function streamChat({ model, messages, signal, options, onToken }) 
   }
 
   if (!res.ok) {
-    throw new Error(`Chat request failed (HTTP ${res.status})`)
+    throw new Error(await errorDetail(res, 'Chat request failed'))
   }
 
   const reader = res.body.getReader()
@@ -76,6 +105,10 @@ export async function streamChat({ model, messages, signal, options, onToken }) 
   let buffer = ''
   let full = ''
   let stats = null
+  // For time-to-first-token: measured wall-clock from request start to the
+  // first streamed token (the felt latency, including prompt processing).
+  const startedAt = performance.now()
+  let firstTokenAt = null
 
   // Parse one newline-delimited JSON object and fold it into the result.
   const processLine = (line) => {
@@ -90,14 +123,18 @@ export async function streamChat({ model, messages, signal, options, onToken }) 
     }
     const token = json?.message?.content
     if (token) {
+      if (firstTokenAt === null) firstTokenAt = performance.now()
       full += token
       onToken(token)
     }
-    // The final chunk (done: true) carries exact token accounting.
+    // The final chunk (done: true) carries exact token accounting + durations
+    // (nanoseconds) used to compute tokens/sec.
     if (json.done) {
       stats = {
         prompt_eval_count: json.prompt_eval_count ?? 0,
         eval_count: json.eval_count ?? 0,
+        eval_duration: json.eval_duration ?? 0,
+        prompt_eval_duration: json.prompt_eval_duration ?? 0,
       }
     }
     if (json.error) {
@@ -122,7 +159,8 @@ export async function streamChat({ model, messages, signal, options, onToken }) 
   // chunk — and its token stats — could be dropped).
   processLine(buffer)
 
-  return { content: full, stats }
+  const ttftMs = firstTokenAt != null ? Math.round(firstTokenAt - startedAt) : null
+  return { content: full, stats: stats ? { ...stats, ttftMs } : stats }
 }
 
 /**

@@ -12,7 +12,7 @@ export const SKILLS = [
   {
     id: 'none',
     name: 'General',
-    blurb: 'No persona — plain general-purpose chat.',
+    blurb: 'No persona. Plain general-purpose chat.',
     system: '',
   },
   {
@@ -24,26 +24,26 @@ export const SKILLS = [
       'infer the programming language and apply its idioms, conventions, and best practices. ' +
       'Review the code under these categories, and organize your findings the same way ' +
       '(skip any category with nothing to report):\n\n' +
-      '1. Bugs & correctness — logic errors, edge cases, off-by-one, null/undefined or ' +
+      '1. Bugs & correctness: logic errors, edge cases, off-by-one, null/undefined or ' +
       'None handling, missing or wrong error/exception handling, race conditions, and ' +
       'incorrect assumptions.\n' +
-      '2. Performance — inefficient algorithms or data structures, needless work or ' +
+      '2. Performance: inefficient algorithms or data structures, needless work or ' +
       'allocations inside loops, N+1 queries, blocking/synchronous calls on hot paths, and ' +
       'avoidable recomputation.\n' +
-      '3. Security — injection, unsafe handling of untrusted input, hardcoded secrets, ' +
+      '3. Security: injection, unsafe handling of untrusted input, hardcoded secrets, ' +
       'unsafe defaults.\n' +
-      '4. Code quality & maintainability — missing or misleading docstrings/comments on ' +
+      '4. Code quality & maintainability: missing or misleading docstrings/comments on ' +
       'non-obvious logic, missing type hints/annotations, unclear or inconsistent naming, ' +
       'magic numbers, and duplicated logic that should be factored out.\n' +
-      '5. Complexity — functions or modules doing too much, deep nesting, or long parameter ' +
+      '5. Complexity: functions or modules doing too much, deep nesting, or long parameter ' +
       'lists; point out what should be broken up and suggest how.\n' +
-      '6. Language best practices & idioms — code that ignores the conventions of the ' +
+      '6. Language best practices & idioms: code that ignores the conventions of the ' +
       'language or framework in use.\n\n' +
       'For each finding: state the issue concisely, point to the specific code, explain why ' +
       'it matters, and show a corrected snippet in a fenced code block. Start with a ' +
       'one-line overall assessment, then order findings by severity (most important first). ' +
       'Use a [Critical]/[Major]/[Minor]/[Nit] tag on each. Be direct, flag anything you are ' +
-      'unsure about, and do not invent problems — if something is solid, say so briefly.',
+      'unsure about, and do not invent problems; if something is solid, say so briefly.',
   },
   {
     id: 'tutor',
@@ -83,7 +83,7 @@ export const SKILLS = [
     system:
       'You are a requirements analyst who interviews the user to design something well ' +
       'BEFORE any implementation. When the user describes a project or feature, do not jump ' +
-      'to a solution. Instead ask focused clarifying questions — a few at a time — to ' +
+      'to a solution. Instead ask focused clarifying questions, a few at a time, to ' +
       'surface what they have not considered: the real problem and who it is for, scope and ' +
       'non-goals, edge cases, data and state, failure modes, constraints (performance, ' +
       'security, platform, budget), and how success is measured. Probe one decision at a ' +
@@ -112,11 +112,42 @@ export const SKILLS = [
   },
 ]
 
+// User-authored skills live in localStorage; each is { id, name, blurb, system,
+// custom: true } and is merged with the built-ins in the picker.
+export const CUSTOM_SKILLS_KEY = 'krang:custom-skills'
+
 const BY_ID = new Map(SKILLS.map((s) => [s.id, s]))
 
-/** Resolve a skill by id, falling back to the default ("none"). */
-export function getSkill(id) {
-  return BY_ID.get(id) || BY_ID.get(DEFAULT_SKILL)
+export function makeSkillId() {
+  return 'custom-' + (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()))
+}
+
+/** Load user-authored skills (defensively). */
+export function loadCustomSkills() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_SKILLS_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed.map((s) => ({ ...s, custom: true })) : []
+  } catch {
+    return []
+  }
+}
+
+/** Persist user-authored skills. */
+export function saveCustomSkills(list) {
+  try {
+    localStorage.setItem(CUSTOM_SKILLS_KEY, JSON.stringify(list))
+  } catch {
+    // storage full/disabled — ignore
+  }
+}
+
+/**
+ * Resolve a skill by id, searching built-ins plus any provided custom skills,
+ * falling back to the default ("none").
+ */
+export function getSkill(id, custom = []) {
+  return BY_ID.get(id) || custom.find((s) => s.id === id) || BY_ID.get(DEFAULT_SKILL)
 }
 
 /** Read the saved default skill id (used for new chats). */

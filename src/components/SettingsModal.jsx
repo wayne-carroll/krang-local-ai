@@ -261,7 +261,7 @@ function AboutPanel() {
         </p>
         <p className="mt-4 max-w-md font-sans text-sm leading-relaxed text-muted">
           A local chat interface for Ollama models. Every message, model, and conversation
-          stays on your machine — nothing is sent to any server.
+          stays on your machine. Nothing is sent to any server.
         </p>
         <p className="mt-3 font-sans text-sm text-muted">
           Requires{' '}
