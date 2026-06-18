@@ -8,6 +8,7 @@ import ParamsPopover from './components/ParamsPopover.jsx'
 import ContextGauge from './components/ContextGauge.jsx'
 import ModelBrowser from './components/ModelBrowser.jsx'
 import SettingsModal from './components/SettingsModal.jsx'
+import ConfirmModal from './components/ConfirmModal.jsx'
 import KrangLogo from './components/KrangLogo.jsx'
 import {
   fetchModels,
@@ -106,6 +107,24 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [theme, setTheme] = useState(loadTheme)
 
+  // Pending confirmation dialog. Replaces window.confirm, which silently
+  // returns false inside the Tauri WebView (so destructive actions would no-op
+  // in the desktop app). `confirmAction(opts)` returns a promise resolving to
+  // the user's choice; the modal renders while a request is pending.
+  const [confirmState, setConfirmState] = useState(null)
+  const confirmAction = useCallback(
+    (opts) =>
+      new Promise((resolve) => {
+        const o = typeof opts === 'string' ? { message: opts } : opts
+        setConfirmState({ ...o, resolve })
+      }),
+    []
+  )
+  function closeConfirm(result) {
+    if (confirmState) confirmState.resolve(result)
+    setConfirmState(null)
+  }
+
   function handleThemeChange(id) {
     setTheme(id)
     applyTheme(id) // sets data-theme on <html> and persists
@@ -123,8 +142,13 @@ export default function App() {
   }
 
   // Delete all saved conversations (with confirmation).
-  function handleClearAll() {
-    if (!window.confirm('Delete ALL conversations? This cannot be undone.')) return
+  async function handleClearAll() {
+    const ok = await confirmAction({
+      title: 'Delete all conversations',
+      message: 'Delete ALL conversations? This cannot be undone.',
+      confirmLabel: 'Delete all',
+    })
+    if (!ok) return
     setConversations([])
     setActiveId(null)
   }
@@ -318,12 +342,12 @@ export default function App() {
 
   async function handleUninstall(name) {
     if (pulls[name]?.phase === 'removing') return // already in progress
-    if (
-      !window.confirm(
-        `Uninstall ${name}?\n\nThis deletes the downloaded model from disk. You can re-install it later, but it will need to download again.`
-      )
-    )
-      return
+    const ok = await confirmAction({
+      title: 'Uninstall model',
+      message: `Uninstall ${name}?\n\nThis deletes the downloaded model from disk. You can re-install it later, but it will need to download again.`,
+      confirmLabel: 'Uninstall',
+    })
+    if (!ok) return
 
     // Reuse the `pulls` map with a 'removing' phase so the row can show status.
     setPulls((p) => ({ ...p, [name]: { phase: 'removing', status: 'removing…' } }))
@@ -418,8 +442,13 @@ export default function App() {
     }
   }
 
-  function handleDeleteConversation(id) {
-    if (!window.confirm('Delete this conversation? This cannot be undone.')) return
+  async function handleDeleteConversation(id) {
+    const ok = await confirmAction({
+      title: 'Delete conversation',
+      message: 'Delete this conversation? This cannot be undone.',
+      confirmLabel: 'Delete',
+    })
+    if (!ok) return
     setConversations((prev) => prev.filter((c) => c.id !== id))
     if (id === activeId) setActiveId(null)
   }
@@ -822,6 +851,17 @@ export default function App() {
           onSave={handleSaveSkill}
           onDelete={handleDeleteSkill}
           onClose={() => setSkillEditor(null)}
+        />
+      )}
+
+      {confirmState && (
+        <ConfirmModal
+          title={confirmState.title}
+          message={confirmState.message}
+          confirmLabel={confirmState.confirmLabel}
+          destructive={confirmState.destructive !== false}
+          onConfirm={() => closeConfirm(true)}
+          onCancel={() => closeConfirm(false)}
         />
       )}
     </div>
