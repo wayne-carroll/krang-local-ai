@@ -1,6 +1,8 @@
 // Thin client for the local Ollama HTTP API.
 // Docs: https://github.com/ollama/ollama/blob/main/docs/api.md
 
+import { getFetch } from './platform.js'
+
 export const OLLAMA_BASE = 'http://localhost:11434'
 
 // Extract a human-readable reason from a non-2xx Ollama response. Ollama puts
@@ -52,7 +54,8 @@ export class OllamaOfflineError extends Error {
 export async function fetchModels() {
   let res
   try {
-    res = await fetch(`${OLLAMA_BASE}/api/tags`)
+    const f = await getFetch()
+    res = await f(`${OLLAMA_BASE}/api/tags`)
   } catch (err) {
     // A thrown fetch (vs. a non-2xx response) means the connection was
     // refused — Ollama isn't running.
@@ -85,7 +88,8 @@ export async function fetchModels() {
 export async function streamChat({ model, messages, signal, options, onToken }) {
   let res
   try {
-    res = await fetch(`${OLLAMA_BASE}/api/chat`, {
+    const f = await getFetch()
+    res = await f(`${OLLAMA_BASE}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model, messages, stream: true, options: options || undefined }),
@@ -180,7 +184,8 @@ export async function streamChat({ model, messages, signal, options, onToken }) 
 export async function pullModel({ name, signal, onProgress }) {
   let res
   try {
-    res = await fetch(`${OLLAMA_BASE}/api/pull`, {
+    const f = await getFetch()
+    res = await f(`${OLLAMA_BASE}/api/pull`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, stream: true }),
@@ -234,7 +239,8 @@ export async function pullModel({ name, signal, onProgress }) {
 export async function deleteModel(name) {
   let res
   try {
-    res = await fetch(`${OLLAMA_BASE}/api/delete`, {
+    const f = await getFetch()
+    res = await f(`${OLLAMA_BASE}/api/delete`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name }),
@@ -258,7 +264,8 @@ export async function deleteModel(name) {
 export async function fetchModelMaxContext(model) {
   let res
   try {
-    res = await fetch(`${OLLAMA_BASE}/api/show`, {
+    const f = await getFetch()
+    res = await f(`${OLLAMA_BASE}/api/show`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model }),
@@ -288,7 +295,8 @@ export async function fetchModelMaxContext(model) {
 export async function fetchModelDetails(model) {
   let res
   try {
-    res = await fetch(`${OLLAMA_BASE}/api/show`, {
+    const f = await getFetch()
+    res = await f(`${OLLAMA_BASE}/api/show`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model }),

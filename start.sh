@@ -197,22 +197,40 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # ---------------------------------------------------------------------------
+# Parse flags. --dev runs the Vite dev server (hot reload) instead of building
+# and serving an optimized bundle; handy for contributors hacking on the UI.
+# ---------------------------------------------------------------------------
+DEV=0
+for arg in "$@"; do
+  case "$arg" in
+    --dev) DEV=1 ;;
+    *) warn "Unknown option: $arg (ignored)" ;;
+  esac
+done
+
+# ---------------------------------------------------------------------------
 # Run
 # ---------------------------------------------------------------------------
-echo "${BOLD}KRANG local AI — setup & launch${RESET}"
+echo "${BOLD}KRANG local AI: setup & launch${RESET}"
 install_node
 install_ollama
 start_ollama
 ensure_model
 install_deps
 
-# Build the optimized production bundle, then serve it. We always rebuild so
-# the served app reflects the current source. `preview` is pinned to 5173 (its
-# default is 4173) to keep the app on one predictable port.
-info "Building production bundle…"
-npm run build
-ok "Build complete"
+if [[ "$DEV" == "1" ]]; then
+  info "Launching dev server on ${BOLD}http://localhost:5173${RESET} (hot reload)"
+  echo "${DIM}    (Press Ctrl+C to stop both the web app and Ollama.)${RESET}"
+  npm run dev -- --port 5173
+else
+  # Build the optimized production bundle, then serve it. We always rebuild so
+  # the served app reflects the current source. `preview` is pinned to 5173 (its
+  # default is 4173) to keep the app on one predictable port.
+  info "Building production bundle..."
+  npm run build
+  ok "Build complete"
 
-info "Launching web app — opening on ${BOLD}http://localhost:5173${RESET}"
-echo "${DIM}    (Press Ctrl+C to stop both the web app and Ollama.)${RESET}"
-npm run preview -- --port 5173
+  info "Launching web app on ${BOLD}http://localhost:5173${RESET}"
+  echo "${DIM}    (Press Ctrl+C to stop both the web app and Ollama.)${RESET}"
+  npm run preview -- --port 5173
+fi

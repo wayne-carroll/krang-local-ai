@@ -1,0 +1,25 @@
+[package]
+name = "krang"
+version = "1.0.0"
+description = "KRANG local AI desktop app"
+edition = "2021"
+
+# The binary entry point (main.rs) is thin; all logic lives in the library so
+# it can also be reused by a mobile entry point later if desired.
+[lib]
+name = "krang_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+# Frontend talks to Ollama through this plugin's fetch (bypasses WebView CORS).
+tauri-plugin-http = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Used Rust-side to probe Ollama and stream-download the binary if missing.
+reqwest = { version = "0.12", features = ["stream"] }
+futures-util = "0.3"
+tokio = { version = "1", features = ["full"] }
