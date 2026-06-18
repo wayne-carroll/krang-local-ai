@@ -7,6 +7,8 @@ no accounts, no telemetry: it talks **directly** to the Ollama API at
 Industrial "Kinetic Archive" design (Space Grotesk + Inter, sharp edges, precise red accent)
 with switchable themes including light mode.
 
+![KRANG desktop app](docs/screenshot.png)
+
 It runs two ways from the same codebase:
 
 - **Mac app (DMG):** a native desktop app that sets Ollama up for you on first launch.
